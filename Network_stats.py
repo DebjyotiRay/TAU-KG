@@ -42,10 +42,23 @@ class NetworkAnalyzer:
             "Average Degree": np.mean([d for n, d in self.G.degree()]),
             "Network Density": nx.density(self.G),
             "Average Clustering Coefficient": nx.average_clustering(self.G),
-            "Connected Components": nx.number_connected_components(self.G),
-            "Graph Diameter": nx.diameter(self.G),
-            "Average Path Length": nx.average_shortest_path_length(self.G)
+            "Connected Components": nx.number_connected_components(self.G)
         }
+
+        # Path-based metrics only if graph is connected
+        largest_cc = max(nx.connected_components(self.G), key=len)
+        largest_subgraph = self.G.subgraph(largest_cc)
+        
+        stats["Largest Component Size"] = len(largest_cc)
+        stats["Largest Component Ratio"] = len(largest_cc) / len(self.G.nodes)
+        
+        if nx.is_connected(self.G):
+            stats["Average Path Length"] = nx.average_shortest_path_length(self.G)
+            stats["Graph Diameter"] = nx.diameter(self.G)
+        else:
+            stats["Average Path Length"] = nx.average_shortest_path_length(largest_subgraph)
+            stats["Graph Diameter"] = nx.diameter(largest_subgraph)
+            stats["Note"] = "Metrics calculated on largest connected component"
 
         # Node type distribution
         node_types = [data["type"] for n, data in self.G.nodes(data=True)]
@@ -316,6 +329,11 @@ class NetworkAnalyzer:
         st.header("Network Overview")
         basic_stats = self.get_basic_stats()
 
+        # Show component information first if graph is disconnected
+        if basic_stats["Connected Components"] > 1:
+            st.warning(f"Network is disconnected with {basic_stats['Connected Components']} components. " +
+                      f"Largest component contains {basic_stats['Largest Component Ratio']:.1%} of nodes.")
+
         # Basic metrics in three columns
         col1, col2, col3 = st.columns(3)
         with col1:
@@ -327,6 +345,14 @@ class NetworkAnalyzer:
         with col3:
             st.metric("Avg Degree", f"{basic_stats['Average Degree']:.2f}")
             st.metric("Components", basic_stats["Connected Components"])
+
+        # Path-based metrics
+        st.subheader("Path-based Metrics (Largest Component)")
+        col1, col2 = st.columns(2)
+        with col1:
+            st.metric("Average Path Length", f"{basic_stats['Average Path Length']:.2f}")
+        with col2:
+            st.metric("Network Diameter", basic_stats["Graph Diameter"])
 
         # Node Distribution
         st.subheader("Node Type Distribution")
