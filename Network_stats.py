@@ -4,11 +4,9 @@ import numpy as np
 from collections import Counter, defaultdict
 import streamlit as st
 from itertools import combinations
-import matplotlib.pyplot as plt
-import seaborn as sns
-from scipy.stats import pearsonr
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+from scipy.stats import pearsonr
 
 class NetworkAnalyzer:
     def __init__(self, nodes_data, edges_data):
