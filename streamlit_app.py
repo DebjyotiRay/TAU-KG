@@ -714,7 +714,7 @@ def main():
                     for viz_name, viz in entropy_results['visualizations'].items():
                         st.plotly_chart(viz)
         
-           with explorer_tab:
+            with explorer_tab:
                 st.header("Network Explorer")
                 control_col, analysis_col = st.columns([1, 2])
                 
