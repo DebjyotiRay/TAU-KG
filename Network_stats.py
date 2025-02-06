@@ -9,7 +9,7 @@ from plotly.subplots import make_subplots
 from scipy.stats import pearsonr
 
 from Network_explorer import *
-from advanced_analyzer import *
+from Advanced_analyzer import *
 from basic_analyzer import *
 class NetworkAnalyzer:
     def __init__(self, nodes_data, edges_data):
