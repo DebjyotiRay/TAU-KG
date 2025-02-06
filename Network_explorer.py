@@ -9,31 +9,22 @@ import logging
 
 class NetworkExplorer:
     def __init__(self, G):
-        """
-        Enhanced Network Explorer with comprehensive analysis capabilities
-        
-        Args:
-            G (networkx.Graph): Input network graph
-        """
+        """Initialize Network Explorer with graph"""
         self.G = G
         logging.basicConfig(level=logging.INFO)
         self.logger = logging.getLogger(__name__)
         
-        # Cached analysis results
+        # Cache for expensive computations
         self._cluster_interaction_cache = None
         self._paper_distribution_cache = None
-    
+
     def cluster_interaction_analysis(self):
         """
-        Comprehensive analysis of interactions between clusters
-        
-        Returns:
-            dict: Detailed cluster interaction metrics and visualizations
+        Analyze interactions between clusters with interactive visualizations
         """
-        # Check cache first
         if self._cluster_interaction_cache:
             return self._cluster_interaction_cache
-        
+
         # Extract cluster information
         clusters = {}
         for node, data in self.G.nodes(data=True):
@@ -42,51 +33,108 @@ class NetworkExplorer:
                 clusters[cluster] = {
                     'nodes': [],
                     'node_types': Counter(),
-                    'connections': defaultdict(int)
+                    'connections': defaultdict(int),
+                    'internal_edges': 0,
+                    'external_edges': 0
                 }
             clusters[cluster]['nodes'].append(node)
             clusters[cluster]['node_types'][data.get('type', 'Unknown')] += 1
-        
-        # Analyze inter-cluster connections
+
+        # Analyze edges
         for u, v, data in self.G.edges(data=True):
             cluster_u = self.G.nodes[u].get('cluster', 'Unknown')
             cluster_v = self.G.nodes[v].get('cluster', 'Unknown')
             
-            if cluster_u != cluster_v:
-                # Track inter-cluster connections
+            if cluster_u == cluster_v:
+                clusters[cluster_u]['internal_edges'] += 1
+            else:
+                clusters[cluster_u]['external_edges'] += 1
+                clusters[cluster_v]['external_edges'] += 1
                 clusters[cluster_u]['connections'][cluster_v] += 1
                 clusters[cluster_v]['connections'][cluster_u] += 1
-        
+
         # Prepare results
         results = {
             'cluster_details': {},
             'visualizations': {}
         }
-        
-        # Cluster-level metrics
+
+        # Compile detailed metrics
         for cluster, info in clusters.items():
             results['cluster_details'][cluster] = {
                 'total_nodes': len(info['nodes']),
                 'node_types': dict(info['node_types']),
-                'inter_cluster_connections': dict(info['connections'])
+                'inter_cluster_connections': dict(info['connections']),
+                'internal_edges': info['internal_edges'],
+                'external_edges': info['external_edges'],
+                'modularity': info['internal_edges'] / 
+                            (info['internal_edges'] + info['external_edges'] + 1e-10)
             }
-        
-        # Visualization: Cluster Interaction Heatmap
+
+        # Create interactive dropdown visualization
         cluster_names = list(clusters.keys())
-        interaction_matrix = np.zeros((len(cluster_names), len(cluster_names)))
+        fig_dropdown = go.Figure()
+
+        for cluster in cluster_names:
+            connections = clusters[cluster]['connections']
+            if connections:  # Only add if there are connections
+                fig_dropdown.add_trace(
+                    go.Bar(
+                        x=list(connections.keys()),
+                        y=list(connections.values()),
+                        name=cluster,
+                        visible=(cluster == cluster_names[0])
+                    )
+                )
+
+        # Create dropdown menu
+        buttons = []
+        for i, cluster in enumerate(cluster_names):
+            visibility = [False] * len(cluster_names)
+            visibility[i] = True
+            buttons.append(dict(
+                label=cluster,
+                method='update',
+                args=[
+                    {'visible': visibility},
+                    {'title': f'Connections from {cluster} to Other Clusters'}
+                ]
+            ))
+
+        fig_dropdown.update_layout(
+            updatemenus=[{
+                'buttons': buttons,
+                'direction': 'down',
+                'showactive': True,
+                'x': 0.1,
+                'y': 1.15,
+                'xanchor': 'left',
+                'yanchor': 'top'
+            }],
+            title=f'Connections from {cluster_names[0]} to Other Clusters',
+            xaxis_title='Target Cluster',
+            yaxis_title='Number of Connections',
+            height=500,
+            width=800
+        )
         
+        results['visualizations']['interactive_cluster_dropdown'] = fig_dropdown
+
+        # Create heatmap
+        interaction_matrix = np.zeros((len(cluster_names), len(cluster_names)))
         for i, cluster1 in enumerate(cluster_names):
             for j, cluster2 in enumerate(cluster_names):
                 if cluster1 != cluster2:
                     interaction_matrix[i, j] = clusters[cluster1]['connections'].get(cluster2, 0)
-        
-        # Plotly Heatmap
+
         fig_heatmap = go.Figure(data=go.Heatmap(
             z=interaction_matrix,
             x=cluster_names,
             y=cluster_names,
-            colorscale='Viridis'
+            colorscale='Viridis',
+            hoverongaps=False
         ))
+
         fig_heatmap.update_layout(
             title='Inter-Cluster Interaction Heatmap',
             xaxis_title='Target Cluster',
@@ -94,659 +142,638 @@ class NetworkExplorer:
             height=600,
             width=800
         )
-        results['visualizations']['cluster_interaction_heatmap'] = fig_heatmap
         
-        # Visualization: Cluster Node Type Distribution
-        fig_node_types = go.Figure()
-        for cluster, info in clusters.items():
-            fig_node_types.add_trace(go.Bar(
-                x=list(info['node_types'].keys()),
-                y=list(info['node_types'].values()),
-                name=cluster
-            ))
-        
-        fig_node_types.update_layout(
-            title='Node Type Distribution Across Clusters',
-            xaxis_title='Node Type',
-            yaxis_title='Count',
-            barmode='group',
-            height=600,
+        results['visualizations']['interaction_heatmap'] = fig_heatmap
+
+        # Node type composition by cluster
+        df_composition = pd.DataFrame([
+            {
+                'Cluster': cluster,
+                'NodeType': node_type,
+                'Count': count
+            }
+            for cluster, info in clusters.items()
+            for node_type, count in info['node_types'].items()
+        ])
+
+        fig_composition = px.bar(
+            df_composition,
+            x='Cluster',
+            y='Count',
+            color='NodeType',
+            title='Node Type Composition by Cluster',
+            barmode='group'
+        )
+
+        fig_composition.update_layout(
+            height=500,
             width=800
         )
-        results['visualizations']['node_type_distribution'] = fig_node_types
         
-        # Cache and return results
-        self._cluster_interaction_cache = results
-        return results
-    
-    def paper_distribution_analysis(self):
-        """
-        Comprehensive analysis of node and edge distribution across papers
-        
-        Returns:
-            dict: Detailed paper distribution metrics and visualizations
-        """
-        # Check cache first
-        if self._paper_distribution_cache:
-            return self._paper_distribution_cache
-        
-        # Extract PMID information
-        paper_distribution = defaultdict(lambda: {
-            'nodes': [],
-            'edges': [],
-            'node_types': Counter(),
-            'unique_node_types': set()
-        })
-        
-        # Process nodes
-        for node, data in self.G.nodes(data=True):
-            pmid = str(data.get('PMID', 'Unknown'))
-            paper_distribution[pmid]['nodes'].append(node)
-            paper_distribution[pmid]['node_types'][data.get('type', 'Unknown')] += 1
-            paper_distribution[pmid]['unique_node_types'].add(data.get('type', 'Unknown'))
-        
-        # Process edges
-        for u, v, data in self.G.edges(data=True):
-            # Find PMID of source node
-            pmid = str(self.G.nodes[u].get('PMID', 'Unknown'))
-            paper_distribution[pmid]['edges'].append((u, v))
-        
-        # Prepare results
-        results = {
-            'paper_details': {},
-            'visualizations': {}
-        }
-        
-        # Aggregate paper-level metrics
-        papers_by_size = []
-        for pmid, info in paper_distribution.items():
-            paper_info = {
-                'PMID': pmid,
-                'total_nodes': len(info['nodes']),
-                'total_edges': len(info['edges']),
-                'node_types': dict(info['node_types']),
-                'unique_node_types': list(info['unique_node_types'])
+        results['visualizations']['cluster_composition'] = fig_composition
+
+        # Cluster metrics visualization
+        metrics_df = pd.DataFrame([
+            {
+                'Cluster': cluster,
+                'Nodes': info['total_nodes'],
+                'Internal Edges': info['internal_edges'],
+                'External Edges': info['external_edges'],
+                'Modularity': results['cluster_details'][cluster]['modularity']
             }
-            papers_by_size.append(paper_info)
-            results['paper_details'][pmid] = paper_info
-        
-        # Convert to DataFrame for easier manipulation
-        df_papers = pd.DataFrame(papers_by_size)
-        
-        # Visualization: Nodes and Edges per Paper
-        fig_paper_stats = make_subplots(rows=1, cols=2, 
-                                        subplot_titles=('Nodes per Paper', 'Edges per Paper'))
-        
-        # Nodes per paper histogram
-        fig_paper_stats.add_trace(
-            go.Histogram(x=df_papers['total_nodes'], name='Nodes'),
+            for cluster, info in clusters.items()
+        ])
+
+        fig_metrics = make_subplots(
+            rows=2, cols=2,
+            subplot_titles=(
+                'Nodes per Cluster',
+                'Internal vs External Edges',
+                'Cluster Modularity',
+                'Connection Distribution'
+            )
+        )
+
+        # Nodes per cluster
+        fig_metrics.add_trace(
+            go.Bar(x=metrics_df['Cluster'], y=metrics_df['Nodes'], name='Nodes'),
             row=1, col=1
         )
-        
-        # Edges per paper histogram
-        fig_paper_stats.add_trace(
-            go.Histogram(x=df_papers['total_edges'], name='Edges'),
+
+        # Internal vs External edges
+        fig_metrics.add_trace(
+            go.Bar(x=metrics_df['Cluster'], y=metrics_df['Internal Edges'], 
+                  name='Internal Edges'),
             row=1, col=2
         )
-        
-        fig_paper_stats.update_layout(
-            title='Distribution of Nodes and Edges Across Papers',
-            height=600,
-            width=800
+        fig_metrics.add_trace(
+            go.Bar(x=metrics_df['Cluster'], y=metrics_df['External Edges'], 
+                  name='External Edges'),
+            row=1, col=2
         )
-        results['visualizations']['nodes_edges_distribution'] = fig_paper_stats
-        
-        # Visualization: Node Type Composition
-        # Aggregate node type information
-        node_type_composition = defaultdict(int)
-        for pmid, info in paper_distribution.items():
-            for node_type, count in info['node_types'].items():
-                node_type_composition[node_type] += count
-        
-        fig_node_type_pie = go.Figure(data=[go.Pie(
-            labels=list(node_type_composition.keys()),
-            values=list(node_type_composition.values()),
-            hole=.3
-        )])
-        fig_node_type_pie.update_layout(
-            title='Overall Node Type Composition',
-            height=600,
-            width=800
+
+        # Modularity
+        fig_metrics.add_trace(
+            go.Bar(x=metrics_df['Cluster'], y=metrics_df['Modularity'], 
+                  name='Modularity'),
+            row=2, col=1
         )
-        results['visualizations']['node_type_composition'] = fig_node_type_pie
-        
-        # Scatter plot: Nodes vs Edges per Paper
-        fig_nodes_vs_edges = go.Figure(data=go.Scatter(
-            x=df_papers['total_nodes'],
-            y=df_papers['total_edges'],
-            mode='markers',
-            marker=dict(
-                size=10,
-                color=df_papers['total_nodes'],
-                colorscale='Viridis',
-                showscale=True
-            ),
-            text=[f"PMID: {pmid}" for pmid in df_papers['PMID']]
-        ))
-        fig_nodes_vs_edges.update_layout(
-            title='Nodes vs Edges per Paper',
-            xaxis_title='Number of Nodes',
-            yaxis_title='Number of Edges',
-            height=600,
-            width=800
+
+        # Connection distribution
+        connection_counts = [len(info['connections']) for info in clusters.values()]
+        fig_metrics.add_trace(
+            go.Histogram(x=connection_counts, name='Connections'),
+            row=2, col=2
         )
-        results['visualizations']['nodes_vs_edges_scatter'] = fig_nodes_vs_edges
+
+        fig_metrics.update_layout(
+            height=800,
+            width=1000,
+            showlegend=True,
+            title_text='Cluster Metrics Overview'
+        )
         
-        # Advanced statistical analysis
-        results['statistics'] = {
-            'total_papers': len(df_papers),
-            'avg_nodes_per_paper': df_papers['total_nodes'].mean(),
-            'median_nodes_per_paper': df_papers['total_nodes'].median(),
-            'avg_edges_per_paper': df_papers['total_edges'].mean(),
-            'median_edges_per_paper': df_papers['total_edges'].median(),
-            'node_type_distribution': dict(node_type_composition)
-        }
-        
-        # Cache and return results
-        self._paper_distribution_cache = results
+        results['visualizations']['cluster_metrics'] = fig_metrics
+
+        self._cluster_interaction_cache = results
         return results
-    
-    def advanced_node_exploration(self, node_id=None):
+
+    def paper_distribution_analysis(self):
         """
-        Comprehensive node exploration with advanced insights
-        
-        Args:
-            node_id (str, optional): Specific node to explore in depth
-        
-        Returns:
-            dict: Detailed node exploration results
+        Analyze distribution of nodes and edges across papers
         """
-        # If no specific node is provided, return overview
-        if node_id is None:
-            return self._global_node_overview()
-        
-        # Detailed node analysis
-        if node_id not in self.G:
-            raise ValueError(f"Node {node_id} not found in the network")
-        
-        # Node-level metrics
-        node_data = self.G.nodes[node_id]
-        node_metrics = {
-            'basic_info': dict(node_data),
-            'degree': self.G.degree(node_id),
-            'neighbors': list(self.G.neighbors(node_id)),
-            'centrality_metrics': {
-                'degree_centrality': nx.degree_centrality(self.G)[node_id],
-                'betweenness_centrality': nx.betweenness_centrality(self.G)[node_id],
-                'closeness_centrality': nx.closeness_centrality(self.G)[node_id],
-                'eigenvector_centrality': nx.eigenvector_centrality(self.G)[node_id]
+        if self._paper_distribution_cache:
+            return self._paper_distribution_cache
+
+        # Group by PMID
+        paper_stats = defaultdict(lambda: {
+            'nodes': [], 
+            'edges': [], 
+            'node_types': Counter(),
+            'clusters': Counter()
+        })
+
+        # Process nodes
+        for node, data in self.G.nodes(data=True):
+            pmid = data.get('PMID', 'Unknown')
+            paper_stats[pmid]['nodes'].append(node)
+            paper_stats[pmid]['node_types'][data.get('type', 'Unknown')] += 1
+            paper_stats[pmid]['clusters'][data.get('cluster', 'Unknown')] += 1
+
+        # Process edges
+        for u, v, data in self.G.edges(data=True):
+            pmid = self.G.nodes[u].get('PMID', 'Unknown')
+            paper_stats[pmid]['edges'].append((u, v))
+
+        # Prepare results
+        paper_data = [
+            {
+                'PMID': pmid,
+                'Nodes': len(stats['nodes']),
+                'Edges': len(stats['edges']),
+                'Node_Types': dict(stats['node_types']),
+                'Clusters': dict(stats['clusters'])
+            }
+            for pmid, stats in paper_stats.items()
+        ]
+
+        df_papers = pd.DataFrame(paper_data)
+
+        # Create visualizations
+        fig = make_subplots(
+            rows=2, cols=2,
+            subplot_titles=(
+                'Distribution of Nodes per Paper',
+                'Distribution of Edges per Paper',
+                'Nodes vs Edges Scatter',
+                'Node Types Across Papers'
+            )
+        )
+
+        # Distribution of nodes per paper
+        fig.add_trace(
+            go.Histogram(x=df_papers['Nodes'], name='Nodes per Paper',
+                        nbinsx=20),
+            row=1, col=1
+        )
+
+        # Distribution of edges per paper
+        fig.add_trace(
+            go.Histogram(x=df_papers['Edges'], name='Edges per Paper',
+                        nbinsx=20),
+            row=1, col=2
+        )
+
+        # Nodes vs Edges scatter
+        fig.add_trace(
+            go.Scatter(
+                x=df_papers['Nodes'],
+                y=df_papers['Edges'],
+                mode='markers',
+                text=df_papers['PMID'],
+                marker=dict(
+                    size=10,
+                    color=df_papers['Nodes'],
+                    colorscale='Viridis',
+                    showscale=True
+                ),
+                name='Papers'
+            ),
+            row=2, col=1
+        )
+
+        # Node types across papers
+        all_node_types = Counter()
+        for types in df_papers['Node_Types']:
+            all_node_types.update(types)
+
+        fig.add_trace(
+            go.Bar(
+                x=list(all_node_types.keys()),
+                y=list(all_node_types.values()),
+                name='Node Types'
+            ),
+            row=2, col=2
+        )
+
+        fig.update_layout(
+            height=800,
+            showlegend=True,
+            title_text='Paper Distribution Analysis'
+        )
+
+        results = {
+            'summary': {
+                'total_papers': len(paper_stats),
+                'avg_nodes_per_paper': df_papers['Nodes'].mean(),
+                'avg_edges_per_paper': df_papers['Edges'].mean(),
+                'max_nodes_paper': df_papers['Nodes'].max(),
+                'max_edges_paper': df_papers['Edges'].max()
+            },
+            'paper_details': paper_data,
+            'visualizations': {
+                'main_overview': fig
             }
         }
+
+        self._paper_distribution_cache = results
+        return results
+
+    def get_filtered_view(self, node_types=None, min_degree=1, min_weight=0.0):
+        """Get filtered view of the network based on criteria"""
+        H = self.G.copy()
         
-        # Neighborhood analysis
-        neighborhood = self.G.subgraph(
-            list(self.G.neighbors(node_id)) + [node_id]
-        )
+        # Apply filters
+        if node_types:
+            nodes_to_remove = [
+                node for node, data in H.nodes(data=True)
+                if data.get('type') not in node_types
+            ]
+            H.remove_nodes_from(nodes_to_remove)
         
-        node_metrics['neighborhood'] = {
-            'total_neighbors': len(node_metrics['neighbors']),
-            'neighborhood_density': nx.density(neighborhood),
-            'neighbor_types': Counter(
-                self.G.nodes[n].get('type', 'Unknown') for n in node_metrics['neighbors']
-            ),
-            'neighbor_clusters': Counter(
-                self.G.nodes[n].get('cluster', 'Unknown') for n in node_metrics['neighbors']
+        if min_degree > 1:
+            nodes_to_remove = [
+                node for node, degree in H.degree()
+                if degree < min_degree
+            ]
+            H.remove_nodes_from(nodes_to_remove)
+        
+        if min_weight > 0:
+            edges_to_remove = [
+                (u, v) for u, v, d in H.edges(data=True)
+                if d.get('weight', 0) < min_weight
+            ]
+            H.remove_edges_from(edges_to_remove)
+
+        # Calculate metrics for filtered network
+        type_dist = Counter(nx.get_node_attributes(H, 'type').values())
+        cluster_dist = Counter(nx.get_node_attributes(H, 'cluster').values())
+        degree_dist = [d for n, d in H.degree()]
+
+        # Create visualizations
+        fig = make_subplots(
+            rows=2, cols=2,
+            subplot_titles=(
+                'Node Type Distribution',
+                'Cluster Distribution',
+                'Degree Distribution',
+                'Node Metrics'
             )
+        )
+
+        # Node type distribution
+        fig.add_trace(
+            go.Bar(
+                x=list(type_dist.keys()),
+                y=list(type_dist.values()),
+                name='Node Types'
+            ),
+            row=1, col=1
+        )
+
+        # Cluster distribution
+        fig.add_trace(
+            go.Bar(
+                x=list(cluster_dist.keys()),
+                y=list(cluster_dist.values()),
+                name='Clusters'
+            ),
+            row=1, col=2
+        )
+
+        # Degree distribution
+        fig.add_trace(
+            go.Histogram(
+                x=degree_dist,
+                name='Degree Distribution',
+                nbinsx=20
+            ),
+            row=2, col=1
+        )
+
+        # Node metrics
+        betweenness = nx.betweenness_centrality(H)
+        fig.add_trace(
+            go.Box(
+                y=list(betweenness.values()),
+                name='Betweenness'
+            ),
+            row=2, col=2
+        )
+
+        fig.update_layout(
+            height=800,
+            showlegend=True,
+            title_text='Filtered Network Analysis'
+        )
+
+        return {
+            'graph': H,
+            'metrics': {
+                'nodes': H.number_of_nodes(),
+                'edges': H.number_of_edges(),
+                'density': nx.density(H),
+                'avg_clustering': nx.average_clustering(H),
+                'avg_degree': np.mean(degree_dist)
+            },
+            'distributions': {
+                'node_types': dict(type_dist),
+                'clusters': dict(cluster_dist),
+                'degrees': degree_dist
+            },
+            'visualization': fig
+        }
+    
+
+
+    def explore_node(self, node_id):
+        """
+        Detailed exploration of a specific node
+        
+        Args:
+            node_id: ID of the node to explore
+            
+        Returns:
+            dict: Comprehensive node analysis with visualizations
+        """
+        if node_id not in self.G:
+            return None
+            
+        # Get node information
+        node_data = self.G.nodes[node_id]
+        neighbors = list(self.G.neighbors(node_id))
+        
+        # Calculate node metrics
+        metrics = {
+            'degree': self.G.degree(node_id),
+            'degree_centrality': nx.degree_centrality(self.G)[node_id],
+            'betweenness_centrality': nx.betweenness_centrality(self.G)[node_id],
+            'closeness_centrality': nx.closeness_centrality(self.G)[node_id],
+            'clustering_coefficient': nx.clustering(self.G, node_id)
         }
         
-        # Visualization of neighborhood
-        pos = nx.spring_layout(neighborhood)
+        # Analyze neighborhood
+        neighbor_types = Counter(self.G.nodes[n]['type'] for n in neighbors)
+        neighbor_clusters = Counter(self.G.nodes[n]['cluster'] for n in neighbors)
         
-        # Create edge trace
-        edge_x = []
-        edge_y = []
-        for edge in neighborhood.edges():
+        # Get connection strengths (edge weights)
+        edge_weights = [
+            self.G[node_id][n].get('weight', 1.0) 
+            for n in neighbors
+        ]
+        
+        # Create subgraph visualization
+        subgraph = self.G.subgraph(neighbors + [node_id])
+        pos = nx.spring_layout(subgraph)
+        
+        # Create interactive network visualization
+        edge_trace = []
+        for edge in subgraph.edges():
             x0, y0 = pos[edge[0]]
             x1, y1 = pos[edge[1]]
-            edge_x.extend([x0, x1, None])
-            edge_y.extend([y0, y1, None])
+            weight = subgraph[edge[0]][edge[1]].get('weight', 1.0)
+            
+            edge_trace.append(
+                go.Scatter(
+                    x=[x0, x1, None],
+                    y=[y0, y1, None],
+                    line=dict(width=weight, color='#888'),
+                    hoverinfo='none',
+                    mode='lines'
+                )
+            )
         
-        edge_trace = go.Scatter(
-            x=edge_x, y=edge_y,
-            line=dict(width=0.5, color='#888'),
-            hoverinfo='none',
-            mode='lines')
-        
-        # Create node trace
+        # Create node traces
         node_x = []
         node_y = []
         node_text = []
-        node_color = []
+        node_colors = []
+        node_sizes = []
         
-        for node in neighborhood.nodes():
+        for node in subgraph.nodes():
             x, y = pos[node]
             node_x.append(x)
             node_y.append(y)
             
-            # Highlight the central node
             if node == node_id:
-                node_color.append('red')
-                node_text.append(f"Central Node: {node}")
+                node_colors.append('red')
+                node_sizes.append(20)
+                node_text.append(f'Central Node: {node}<br>'
+                               f'Type: {node_data["type"]}<br>'
+                               f'Cluster: {node_data["cluster"]}')
             else:
-                node_color.append('blue')
-                node_text.append(f"Neighbor: {node}")
+                node_data = subgraph.nodes[node]
+                node_colors.append('lightblue')
+                node_sizes.append(15)
+                node_text.append(f'Neighbor: {node}<br>'
+                               f'Type: {node_data["type"]}<br>'
+                               f'Cluster: {node_data["cluster"]}')
         
         node_trace = go.Scatter(
-            x=node_x, y=node_y,
+            x=node_x,
+            y=node_y,
             mode='markers',
-            hovertext=node_text,
+            hoverinfo='text',
+            text=node_text,
             marker=dict(
-                showscale=False,
-                color=node_color,
-                size=10
+                size=node_sizes,
+                color=node_colors,
+                line_width=2
             )
         )
         
-        # Create network graph
-        fig_neighborhood = go.Figure(data=[edge_trace, node_trace])
-        fig_neighborhood.update_layout(
-            title=f'Neighborhood of Node {node_id}',
+        # Create network visualization
+        fig_network = go.Figure(data=edge_trace + [node_trace])
+        fig_network.update_layout(
+            title=f'Neighborhood Network for Node {node_id}',
             showlegend=False,
-            height=600,
-            width=800
+            hovermode='closest',
+            margin=dict(b=20, l=5, r=5, t=40),
+            xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+            yaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+            height=600
         )
         
-        node_metrics['visualizations'] = {
-            'neighborhood_graph': fig_neighborhood
-        }
-        
-        return node_metrics
-    
-    def _global_node_overview(self):
-        """
-        Provide a global overview of nodes in the network
-        
-        Returns:
-            dict: Global node overview metrics
-        """
-        # Global node type distribution
-        node_type_dist = Counter(
-            self.G.nodes[node].get('type', 'Unknown') for node in self.G.nodes()
+        # Create distribution visualizations
+        fig_dist = make_subplots(
+            rows=2, cols=2,
+            subplot_titles=(
+                'Neighbor Type Distribution',
+                'Neighbor Cluster Distribution',
+                'Edge Weight Distribution',
+                'Neighbor Degree Distribution'
+            )
         )
         
-        # Node degree distribution
-        degrees = [d for n, d in self.G.degree()]
-        
-        # Visualizations
-        # Node Type Distribution Pie Chart
-        fig_node_types = go.Figure(data=[go.Pie(
-            labels=list(node_type_dist.keys()),
-            values=list(node_type_dist.values()),
-            hole=.3
-        )])
-        fig_node_types.update_layout(
-            title='Global Node Type Distribution',
-            height=600,
-            width=800
+        # Neighbor type distribution
+        fig_dist.add_trace(
+            go.Bar(
+                x=list(neighbor_types.keys()),
+                y=list(neighbor_types.values()),
+                name='Types'
+            ),
+            row=1, col=1
         )
         
-        # Degree Distribution Histogram
-        fig_degree_dist = go.Figure(data=[go.Histogram(
-            x=degrees,
-            nbinsx=50
-        )])
-        fig_degree_dist.update_layout(
-            title='Node Degree Distribution',
-            xaxis_title='Degree',
-            yaxis_title='Frequency',
-            height=600,
-            width=800
+        # Neighbor cluster distribution
+        fig_dist.add_trace(
+            go.Bar(
+                x=list(neighbor_clusters.keys()),
+                y=list(neighbor_clusters.values()),
+                name='Clusters'
+            ),
+            row=1, col=2
+        )
+        
+        # Edge weight distribution
+        fig_dist.add_trace(
+            go.Histogram(
+                x=edge_weights,
+                name='Edge Weights',
+                nbinsx=20
+            ),
+            row=2, col=1
+        )
+        
+        # Neighbor degree distribution
+        neighbor_degrees = [self.G.degree(n) for n in neighbors]
+        fig_dist.add_trace(
+            go.Histogram(
+                x=neighbor_degrees,
+                name='Neighbor Degrees',
+                nbinsx=20
+            ),
+            row=2, col=2
+        )
+        
+        fig_dist.update_layout(
+            height=800,
+            showlegend=True,
+            title_text=f'Neighborhood Analysis for Node {node_id}'
         )
         
         return {
-            'node_type_distribution': dict(node_type_dist),
-            'degree_distribution': {
-                'mean': np.mean(degrees),
-                'median': np.median(degrees),
-                'min': min(degrees),
-                'max': max(degrees)
+            'node_data': node_data,
+            'metrics': metrics,
+            'neighborhood': {
+                'total_neighbors': len(neighbors),
+                'neighbor_types': dict(neighbor_types),
+                'neighbor_clusters': dict(neighbor_clusters),
+                'avg_edge_weight': np.mean(edge_weights),
+                'max_edge_weight': max(edge_weights)
             },
             'visualizations': {
-                'node_type_pie': fig_node_types,
-                'degree_distribution': fig_degree_dist
+                'network': fig_network,
+                'distributions': fig_dist
             }
         }
-    def enhanced_cluster_interaction_visualization(self):
+        
+    def get_network_summary(self):
         """
-        Create an enhanced, interactive visualization of cluster interactions
+        Get comprehensive network summary with visualizations
         
         Returns:
-            dict: Interactive cluster interaction visualizations
+            dict: Network summary statistics and visualizations
         """
-        # Reuse the cluster interaction analysis method
-        cluster_analysis = self.cluster_interaction_analysis()
+        # Calculate basic metrics
+        metrics = {
+            'total_nodes': self.G.number_of_nodes(),
+            'total_edges': self.G.number_of_edges(),
+            'density': nx.density(self.G),
+            'avg_clustering': nx.average_clustering(self.G),
+            'avg_degree': np.mean([d for n, d in self.G.degree()]),
+            'is_connected': nx.is_connected(self.G),
+            'number_components': nx.number_connected_components(self.G)
+        }
         
-        # Prepare data for dropdown visualization
-        clusters = list(cluster_analysis['cluster_details'].keys())
+        # Get largest component metrics
+        if not metrics['is_connected']:
+            largest_cc = max(nx.connected_components(self.G), key=len)
+            largest_subgraph = self.G.subgraph(largest_cc)
+            metrics.update({
+                'largest_component_size': len(largest_cc),
+                'largest_component_ratio': len(largest_cc) / metrics['total_nodes'],
+                'largest_component_density': nx.density(largest_subgraph),
+                'largest_component_diameter': nx.diameter(largest_subgraph)
+            })
         
-        # Create interactive dropdown-based visualization
-        fig_dropdown = go.Figure()
+        # Get distributions
+        distributions = {
+            'node_types': Counter(nx.get_node_attributes(self.G, 'type').values()),
+            'clusters': Counter(nx.get_node_attributes(self.G, 'cluster').values()),
+            'degrees': Counter(dict(self.G.degree()).values()),
+            'component_sizes': [len(c) for c in nx.connected_components(self.G)]
+        }
         
-        # Prepare data for each cluster
-        for cluster in clusters:
-            # Get connections for this cluster
-            connections = cluster_analysis['cluster_details'][cluster]['inter_cluster_connections']
-            
-            # Prepare connection data
-            connection_data = []
-            for target_cluster, connection_count in connections.items():
-                connection_data.append({
-                    'Source Cluster': cluster,
-                    'Target Cluster': target_cluster,
-                    'Connection Count': connection_count
-                })
-            
-            # Convert to DataFrame for easier plotting
-            df_connections = pd.DataFrame(connection_data)
-            
-            # Add trace for this cluster (initially invisible)
-            fig_dropdown.add_trace(
-                go.Bar(
-                    x=df_connections['Target Cluster'],
-                    y=df_connections['Connection Count'],
-                    name=cluster,
-                    visible=(cluster == clusters[0])  # Only first cluster visible by default
-                )
+        # Create visualizations
+        fig = make_subplots(
+            rows=2, cols=2,
+            subplot_titles=(
+                'Node Type Distribution',
+                'Cluster Distribution',
+                'Degree Distribution',
+                'Component Size Distribution'
             )
-        
-        # Create dropdown menu
-        dropdown_buttons = []
-        for i, cluster in enumerate(clusters):
-            visibility = [False] * len(clusters)
-            visibility[i] = True
-            
-            dropdown_buttons.append(
-                dict(
-                    method='update',
-                    label=cluster,
-                    args=[{'visible': visibility},
-                        {'title': f'Inter-Cluster Connections for {cluster}'}]
-                )
-            )
-        
-        # Update layout with dropdown
-        fig_dropdown.update_layout(
-            updatemenus=[{
-                'buttons': dropdown_buttons,
-                'direction': 'down',
-                'showactive': True,
-                'x': 0.5,
-                'xanchor': 'center',
-                'y': 1.15,
-                'yanchor': 'top'
-            }],
-            title=f'Inter-Cluster Connections for {clusters[0]}',
-            xaxis_title='Target Cluster',
-            yaxis_title='Connection Count',
-            height=600,
-            width=800
         )
         
-        # Combine visualizations
-        cluster_analysis['visualizations']['interactive_dropdown'] = fig_dropdown
+        # Node type distribution
+        fig.add_trace(
+            go.Bar(
+                x=list(distributions['node_types'].keys()),
+                y=list(distributions['node_types'].values()),
+                name='Node Types'
+            ),
+            row=1, col=1
+        )
         
-        return cluster_analysis
-
-    def additional_network_exploration_methods(self):
-        """
-        Additional advanced network exploration techniques
+        # Cluster distribution
+        fig.add_trace(
+            go.Bar(
+                x=list(distributions['clusters'].keys()),
+                y=list(distributions['clusters'].values()),
+                name='Clusters'
+            ),
+            row=1, col=2
+        )
         
-        Returns:
-            dict: Various advanced network exploration analyses
-        """
-        # Network Topology Analysis
-        def network_topology_analysis():
-            """Analyze network topology characteristics"""
-            # Compute various topological metrics
-            topology_metrics = {
-                'Average Clustering Coefficient': nx.average_clustering(self.G),
-                'Global Efficiency': nx.global_efficiency(self.G),
-                'Average Path Length': nx.average_shortest_path_length(self.G) if nx.is_connected(self.G) else float('inf'),
-                'Network Diameter': nx.diameter(self.G) if nx.is_connected(self.G) else float('inf'),
-                'Is Connected': nx.is_connected(self.G),
-                'Number of Connected Components': nx.number_connected_components(self.G)
-            }
-            
-            # Visualize component sizes
-            components = list(nx.connected_components(self.G))
-            component_sizes = [len(comp) for comp in components]
-            
-            fig_component_sizes = go.Figure(data=[go.Histogram(
-                x=component_sizes,
+        # Degree distribution
+        fig.add_trace(
+            go.Histogram(
+                x=list(distributions['degrees'].keys()),
+                y=list(distributions['degrees'].values()),
+                name='Degree Distribution',
                 nbinsx=20
-            )])
-            fig_component_sizes.update_layout(
-                title='Connected Component Size Distribution',
-                xaxis_title='Component Size',
-                yaxis_title='Frequency',
-                height=600,
-                width=800
-            )
-            
-            return {
-                'metrics': topology_metrics,
-                'visualizations': {
-                    'component_size_distribution': fig_component_sizes
-                }
-            }
+            ),
+            row=2, col=1
+        )
         
-        # Network Centrality Landscape
-        def network_centrality_landscape():
-            """
-            Comprehensive centrality analysis
-            
-            Returns:
-                dict: Detailed centrality metrics and visualizations
-            """
-            # Compute various centrality measures
-            centrality_metrics = {
-                'Degree Centrality': nx.degree_centrality(self.G),
-                'Betweenness Centrality': nx.betweenness_centrality(self.G),
-                'Closeness Centrality': nx.closeness_centrality(self.G),
-                'Eigenvector Centrality': nx.eigenvector_centrality(self.G),
-                'PageRank': nx.pagerank(self.G)
-            }
-            
-            # Prepare visualization data
-            centrality_df = pd.DataFrame(centrality_metrics)
-            
-            # Correlation heatmap of centrality measures
-            fig_centrality_corr = go.Figure(data=go.Heatmap(
-                z=centrality_df.corr().values,
-                x=centrality_df.columns,
-                y=centrality_df.columns,
-                colorscale='RdBu_r'
-            ))
-            fig_centrality_corr.update_layout(
-                title='Centrality Measures Correlation',
-                height=600,
-                width=800
-            )
-            
-            # Scatter matrix of centrality measures
-            fig_scatter_matrix = px.scatter_matrix(
-                centrality_df, 
-                dimensions=list(centrality_metrics.keys()),
-                title='Centrality Measures Scatter Matrix'
-            )
-            fig_scatter_matrix.update_layout(height=1000, width=1000)
-            
-            return {
-                'metrics': centrality_metrics,
-                'visualizations': {
-                    'centrality_correlation_heatmap': fig_centrality_corr,
-                    'centrality_scatter_matrix': fig_scatter_matrix
-                }
-            }
-        
-        # Network Resilience Analysis
-        def network_resilience_analysis():
-            """
-            Analyze network resilience through node removal simulations
-            
-            Returns:
-                dict: Network resilience metrics and visualizations
-            """
-            # Simulate node removals
-            def simulate_node_removal(remove_strategy):
-                """
-                Simulate network degradation by removing nodes
-                
-                Args:
-                    remove_strategy (str): Strategy for node removal
-                
-                Returns:
-                    list: Largest component sizes after each removal
-                """
-                G_copy = self.G.copy()
-                largest_component_sizes = [len(max(nx.connected_components(G_copy), key=len))]
-                
-                if remove_strategy == 'random':
-                    nodes = list(G_copy.nodes())
-                    np.random.shuffle(nodes)
-                elif remove_strategy == 'highest_degree':
-                    nodes = sorted(G_copy.degree(), key=lambda x: x[1], reverse=True)
-                    nodes = [n[0] for n in nodes]
-                
-                for node in nodes[:min(len(nodes), 100)]:
-                    G_copy.remove_node(node)
-                    largest_component_sizes.append(
-                        len(max(nx.connected_components(G_copy), key=len))
-                    )
-                
-                return largest_component_sizes
-            
-            # Simulate different removal strategies
-            random_removal = simulate_node_removal('random')
-            targeted_removal = simulate_node_removal('highest_degree')
-            
-            # Visualization
-            fig_resilience = go.Figure()
-            fig_resilience.add_trace(go.Scatter(
-                y=random_removal,
-                mode='lines+markers',
-                name='Random Node Removal'
-            ))
-            fig_resilience.add_trace(go.Scatter(
-                y=targeted_removal,
-                mode='lines+markers',
-                name='Highest Degree Node Removal'
-            ))
-            
-            fig_resilience.update_layout(
-                title='Network Resilience under Node Removal',
-                xaxis_title='Number of Nodes Removed',
-                yaxis_title='Largest Component Size',
-                height=600,
-                width=800
-            )
-            
-            return {
-                'metrics': {
-                    'random_removal_degradation': random_removal,
-                    'targeted_removal_degradation': targeted_removal
-                },
-                'visualizations': {
-                    'network_resilience': fig_resilience
-                }
-            }
-        
-        # Temporal Evolution (if temporal data is available)
-        def temporal_network_evolution():
-            """
-            Analyze network evolution over time
-            
-            Returns:
-                dict: Temporal network evolution metrics
-            """
-            # Check for temporal attributes (PMID)
-            temporal_nodes = [
-                node for node, data in self.G.nodes(data=True) 
-                if 'PMID' in data
-            ]
-            
-            if not temporal_nodes:
-                return {"error": "No temporal data available"}
-            
-            # Group nodes by PMID
-            pmid_groups = defaultdict(list)
-            for node, data in self.G.nodes(data=True):
-                if 'PMID' in data:
-                    pmid_groups[data['PMID']].append(node)
-            
-            # Analyze network metrics over time
-            temporal_metrics = []
-            sorted_pmids = sorted(pmid_groups.keys())
-            
-            for pmid in sorted_pmids:
-                subgraph = self.G.subgraph(pmid_groups[pmid])
-                temporal_metrics.append({
-                    'PMID': pmid,
-                    'Nodes': len(subgraph.nodes()),
-                    'Edges': len(subgraph.edges()),
-                    'Density': nx.density(subgraph),
-                    'Avg Clustering': nx.average_clustering(subgraph)
-                })
-            
-            # Convert to DataFrame
-            df_temporal = pd.DataFrame(temporal_metrics)
-            
-            # Visualization of network metrics over time
-            fig_temporal = make_subplots(rows=2, cols=2, 
-                                        subplot_titles=('Nodes', 'Edges', 'Network Density', 'Clustering Coefficient'))
-            
-            # Nodes over time
-            fig_temporal.add_trace(
-                go.Scatter(x=df_temporal['PMID'], y=df_temporal['Nodes'], mode='lines+markers'),
-                row=1, col=1
-            )
-            
-            # Edges over time
-            fig_temporal.add_trace(
-                go.Scatter(x=df_temporal['PMID'], y=df_temporal['Edges'], mode='lines+markers'),
-                row=1, col=2
-            )
-            
-            # Density over time
-            fig_temporal.add_trace(
-                go.Scatter(x=df_temporal['PMID'], y=df_temporal['Density'], mode='lines+markers'),
-                row=2, col=1
-            )
-            
-            # Clustering coefficient over time
-            fig_temporal.add_trace(
-                go.Scatter(x=df_temporal['PMID'], y=df_temporal['Avg Clustering'], mode='lines+markers'),
+        # Component size distribution
+        if not metrics['is_connected']:
+            fig.add_trace(
+                go.Histogram(
+                    x=distributions['component_sizes'],
+                    name='Component Sizes',
+                    nbinsx=20
+                ),
                 row=2, col=2
             )
-            
-            fig_temporal.update_layout(
-                title='Network Evolution Over Time',
-                height=800,
-                width=1000
-            )
-            
-            return {
-                'metrics': temporal_metrics,
-                'visualizations': {
-                    'temporal_evolution': fig_temporal
-                }
-            }
         
-        # Combine all analyses
-        return {
-            'topology_analysis': network_topology_analysis(),
-            'centrality_landscape': network_centrality_landscape(),
-            'resilience_analysis': network_resilience_analysis(),
-            'temporal_evolution': temporal_network_evolution()
+        fig.update_layout(
+            height=800,
+            showlegend=True,
+            title_text='Network Summary Analysis'
+        )
+        
+        # Create centrality comparison
+        centrality_methods = {
+            'Degree': nx.degree_centrality(self.G),
+            'Betweenness': nx.betweenness_centrality(self.G),
+            'Closeness': nx.closeness_centrality(self.G),
+            'Eigenvector': nx.eigenvector_centrality(self.G, max_iter=1000)
         }
-
+        
+        # Prepare centrality data
+        centrality_data = pd.DataFrame(centrality_methods)
+        
+        # Create centrality correlation heatmap
+        fig_corr = go.Figure(data=go.Heatmap(
+            z=centrality_data.corr(),
+            x=centrality_data.columns,
+            y=centrality_data.columns,
+            colorscale='RdBu'
+        ))
+        
+        fig_corr.update_layout(
+            title='Centrality Measure Correlations',
+            height=500
+        )
+        
+        return {
+            'metrics': metrics,
+            'distributions': distributions,
+            'centrality_correlations': centrality_data.corr().to_dict(),
+            'visualizations': {
+                'main_overview': fig,
+                'centrality_correlation': fig_corr
+            }
+        }
