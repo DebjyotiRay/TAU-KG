@@ -410,11 +410,7 @@ def add_help_section():
         - Use the search box to find specific nodes
         - Download selected node data from the sidebar
         - Clear selection to start over
-                        
-        **Features:**
-        - Export full network or specific clusters
-        - Download detailed statistics
-        - Search and highlight specific nodes
+        
         """)
 
 def initialize_session_state():
@@ -481,7 +477,7 @@ def main():
             handle_selected_nodes()
 
             # Display network statistics
-            display_network_stats(nodes_data, edges_data, selected_cluster)
+            # display_network_stats(nodes_data, edges_data, selected_cluster)
 
             # Export options
             st.markdown("---")
@@ -535,7 +531,7 @@ def main():
                     )
 
         # Main content area
-        main_tab, advanced_analysis_tab = st.tabs(["Network Visualization", "Detailed Analysis"])
+        main_tab, stats_tab = st.tabs(["Network Visualization", "Detailed Analysis"])
 
         with main_tab:
             st.title("Biomedical Knowledge Graph Visualization")
