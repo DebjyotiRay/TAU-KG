@@ -535,55 +535,319 @@ def main():
                     )
 
         # Main content area
-        main_tab, stats_tab = st.tabs(["Network Visualization", "Detailed Analysis"])
+        main_tab, advanced_analysis_tab = st.tabs(["Network Visualization", "Detailed Analysis"])
 
         with main_tab:
             st.title("Biomedical Knowledge Graph Visualization")
             
             # Create and display network
-            with st.spinner("Loading network visualization..."):
-                net = create_network(None if selected_cluster == "All" else selected_cluster)
-                if net:
-                    # Add JavaScript for multi-node selection
-                    net.html = net.html.replace('</head>', '''
-                        <script>
-                        document.addEventListener('DOMContentLoaded', function() {
-                            network.on("click", function(params) {
-                                if (params.nodes.length > 0 && params.event.srcEvent.ctrlKey) {
-                                    window.parent.postMessage({
-                                        type: "nodes_selected",
-                                        nodes: params.nodes
-                                    }, "*");
-                                }
-                            });
+            # with st.spinner("Loading network visualization..."):
+            net = create_network(None if selected_cluster == "All" else selected_cluster)
+            if net:
+                # Add JavaScript for multi-node selection
+                net.html = net.html.replace('</head>', '''
+                    <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        network.on("click", function(params) {
+                            if (params.nodes.length > 0 && params.event.srcEvent.ctrlKey) {
+                                window.parent.postMessage({
+                                    type: "nodes_selected",
+                                    nodes: params.nodes
+                                }, "*");
+                            }
                         });
-                        </script>
-                        </head>
-                    ''')
+                    });
+                    </script>
+                    </head>
+                ''')
+                
+                # Save and display network
+                net.save_graph("network.html")
+                content = safe_read_file("network.html")
+                if content:
+                    components.html(content, height=800)
+                    st.success("Network visualization loaded successfully")
+
+                # Display legend
+                st.write("\n### Node Type Legend")
+                cols = st.columns(4)
+                for i, (node_type, color) in enumerate(color_scheme.items()):
+                    with cols[i % 4]:
+                        st.markdown(
+                            f'<div style="display: flex; align-items: center;">'
+                            f'<div style="width: 20px; height: 20px; background-color: {color}; '
+                            f'margin-right: 10px; border-radius: 50%;"></div>'
+                            f'<span style="font-weight: 500;">{node_type.capitalize()}</span></div>',
+                            unsafe_allow_html=True
+                        )
+
+        # with stats_tab:
+        #     # Display detailed network statistics and analysis
+        #     analyzer.display_stats_streamlit(selected_cluster)
+        with advanced_analysis_tab:
+            st.header("Comprehensive Network Analysis")
+            
+            # Create multiple columns for quick overview
+            overview_cols = st.columns(4)
+            with overview_cols[0]:
+                st.metric("Total Nodes", len(nodes_data))
+            with overview_cols[1]:
+                st.metric("Total Edges", len(edges_data))
+            with overview_cols[2]:
+                st.metric("Node Types", len(set(node['type'] for node in nodes_data)))
+            with overview_cols[3]:
+                st.metric("Clusters", len(clusters_data))
+        
+            # Tabbed interface for different analysis perspectives
+            analysis_tabs = st.tabs([
+                "Network Topology", 
+                "Community Structure", 
+                "Node Characteristics", 
+                "Edge Analysis", 
+                "Advanced Metrics", 
+                "Temporal Dynamics", 
+                "Predictive Insights"
+            ])
+        
+            with analysis_tabs[0]:  # Network Topology
+                st.subheader("Network Topology Exploration")
+                
+                # Topology visualization options
+                topology_cols = st.columns(2)
+                with topology_cols[0]:
+                    # Degree distribution visualization
+                    st.write("### Degree Distribution")
+                    degrees = [dict(G.degree())[node] for node in G.nodes()]
+                    fig_degree = go.Figure(data=[go.Histogram(x=degrees, nbinsx=30)])
+                    fig_degree.update_layout(title="Node Degree Distribution")
+                    st.plotly_chart(fig_degree)
+                
+                with topology_cols[1]:
+                    # Centrality measures comparison
+                    st.write("### Centrality Comparison")
+                    centrality_methods = {
+                        'Degree Centrality': nx.degree_centrality(G),
+                        'Betweenness Centrality': nx.betweenness_centrality(G),
+                        'Closeness Centrality': nx.closeness_centrality(G),
+                        'Eigenvector Centrality': nx.eigenvector_centrality(G)
+                    }
                     
-                    # Save and display network
-                    net.save_graph("network.html")
-                    content = safe_read_file("network.html")
-                    if content:
-                        components.html(content, height=800)
-                        st.success("Network visualization loaded successfully")
-
-                    # Display legend
-                    st.write("\n### Node Type Legend")
-                    cols = st.columns(4)
-                    for i, (node_type, color) in enumerate(color_scheme.items()):
-                        with cols[i % 4]:
-                            st.markdown(
-                                f'<div style="display: flex; align-items: center;">'
-                                f'<div style="width: 20px; height: 20px; background-color: {color}; '
-                                f'margin-right: 10px; border-radius: 50%;"></div>'
-                                f'<span style="font-weight: 500;">{node_type.capitalize()}</span></div>',
-                                unsafe_allow_html=True
-                            )
-
-        with stats_tab:
-            # Display detailed network statistics and analysis
-            analyzer.display_stats_streamlit(selected_cluster)
+                    # Boxplot of centrality measures
+                    centrality_df = pd.DataFrame(centrality_methods)
+                    fig_centrality = go.Figure()
+                    for column in centrality_df.columns:
+                        fig_centrality.add_trace(go.Box(y=centrality_df[column], name=column))
+                    fig_centrality.update_layout(title="Centrality Measures Comparison")
+                    st.plotly_chart(fig_centrality)
+        
+            with analysis_tabs[1]:  # Community Structure
+                st.subheader("Community Detection and Analysis")
+                
+                # Community detection method selection
+                community_method = st.selectbox(
+                    "Select Community Detection Algorithm", 
+                    ["Louvain", "Greedy Modularity", "Label Propagation"]
+                )
+                
+                # Perform community detection
+                if community_method == "Louvain":
+                    communities = nx.community.louvain_communities(G)
+                elif community_method == "Greedy Modularity":
+                    communities = nx.community.greedy_modularity_communities(G)
+                else:
+                    communities = nx.community.label_propagation_communities(G)
+                
+                # Community analysis
+                community_cols = st.columns(2)
+                with community_cols[0]:
+                    st.write("### Community Size Distribution")
+                    community_sizes = [len(community) for community in communities]
+                    fig_community_sizes = go.Figure(data=[go.Histogram(x=community_sizes, nbinsx=20)])
+                    fig_community_sizes.update_layout(title="Community Size Distribution")
+                    st.plotly_chart(fig_community_sizes)
+                
+                with community_cols[1]:
+                    st.write("### Community Composition")
+                    # Analyze node types in largest community
+                    largest_community = max(communities, key=len)
+                    community_node_types = Counter(
+                        G.nodes[node].get('type', 'Unknown') for node in largest_community
+                    )
+                    
+                    fig_community_types = go.Figure(data=[
+                        go.Pie(
+                            labels=list(community_node_types.keys()),
+                            values=list(community_node_types.values())
+                        )
+                    ])
+                    fig_community_types.update_layout(title="Node Types in Largest Community")
+                    st.plotly_chart(fig_community_types)
+        
+            with analysis_tabs[2]:  # Node Characteristics
+                st.subheader("Node Type and Cluster Analysis")
+                
+                # Node type distribution
+                node_type_dist = Counter(node['type'] for node in nodes_data)
+                fig_node_types = go.Figure(data=[
+                    go.Pie(
+                        labels=list(node_type_dist.keys()),
+                        values=list(node_type_dist.values())
+                    )
+                ])
+                fig_node_types.update_layout(title="Node Type Distribution")
+                st.plotly_chart(fig_node_types)
+                
+                # Cluster analysis
+                st.write("### Cluster Composition")
+                cluster_type_dist = defaultdict(lambda: defaultdict(int))
+                for node in nodes_data:
+                    cluster_type_dist[node['cluster']][node['type']] += 1
+                
+                # Interactive cluster selection
+                selected_cluster = st.selectbox(
+                    "Select Cluster for Detailed Analysis", 
+                    list(cluster_type_dist.keys())
+                )
+                
+                if selected_cluster:
+                    cluster_types = cluster_type_dist[selected_cluster]
+                    fig_cluster_types = go.Figure(data=[
+                        go.Bar(
+                            x=list(cluster_types.keys()),
+                            y=list(cluster_types.values())
+                        )
+                    ])
+                    fig_cluster_types.update_layout(
+                        title=f"Node Types in {selected_cluster} Cluster",
+                        xaxis_title="Node Type",
+                        yaxis_title="Count"
+                    )
+                    st.plotly_chart(fig_cluster_types)
+        
+            with analysis_tabs[3]:  # Edge Analysis
+                st.subheader("Edge Relationship and Weight Analysis")
+                
+                # Edge weight distribution
+                edge_weights = [edge['score'] for edge in edges_data]
+                fig_edge_weights = go.Figure(data=[go.Histogram(x=edge_weights, nbinsx=30)])
+                fig_edge_weights.update_layout(title="Edge Weight Distribution")
+                st.plotly_chart(fig_edge_weights)
+                
+                # Relation type analysis
+                relation_types = Counter(edge['relation'] for edge in edges_data)
+                fig_relation_types = go.Figure(data=[
+                    go.Pie(
+                        labels=list(relation_types.keys()),
+                        values=list(relation_types.values())
+                    )
+                ])
+                fig_relation_types.update_layout(title="Edge Relation Types")
+                st.plotly_chart(fig_relation_types)
+        
+            with analysis_tabs[4]:  # Advanced Metrics
+                st.subheader("Advanced Network Metrics")
+                
+                # Network complexity metrics
+                st.write("### Network Complexity")
+                complexity_metrics = {
+                    "Clustering Coefficient": nx.average_clustering(G),
+                    "Network Density": nx.density(G),
+                    "Average Path Length": nx.average_shortest_path_length(G),
+                    "Network Diameter": nx.diameter(G)
+                }
+                
+                for metric, value in complexity_metrics.items():
+                    st.metric(metric, f"{value:.4f}")
+        
+            with analysis_tabs[5]:  # Temporal Dynamics
+                st.subheader("Temporal Network Evolution")
+                
+                # Check for temporal attributes (PMID)
+                temporal_nodes = [node for node in nodes_data if 'PMID' in node]
+                if temporal_nodes:
+                    # Group by PMID
+                    pmid_groups = defaultdict(list)
+                    for node in temporal_nodes:
+                        pmid_groups[node.get('PMID', 'Unknown')].append(node)
+                    
+                    # Analyze network metrics over time
+                    temporal_metrics = []
+                    for pmid, nodes in pmid_groups.items():
+                        subgraph = G.subgraph(nodes)
+                        temporal_metrics.append({
+                            'PMID': pmid,
+                            'Nodes': len(subgraph.nodes()),
+                            'Edges': len(subgraph.edges()),
+                            'Density': nx.density(subgraph)
+                        })
+                    
+                    # Temporal evolution visualization
+                    df_temporal = pd.DataFrame(temporal_metrics)
+                    
+                    # Line plots for temporal metrics
+                    fig_temporal = make_subplots(rows=1, cols=3, 
+                                                 subplot_titles=('Nodes', 'Edges', 'Network Density'))
+                    
+                    fig_temporal.add_trace(
+                        go.Scatter(x=df_temporal['PMID'], y=df_temporal['Nodes'], mode='lines+markers'),
+                        row=1, col=1
+                    )
+                    fig_temporal.add_trace(
+                        go.Scatter(x=df_temporal['PMID'], y=df_temporal['Edges'], mode='lines+markers'),
+                        row=1, col=2
+                    )
+                    fig_temporal.add_trace(
+                        go.Scatter(x=df_temporal['PMID'], y=df_temporal['Density'], mode='lines+markers'),
+                        row=1, col=3
+                    )
+                    
+                    fig_temporal.update_layout(height=500, title_text="Network Metrics Across Publications")
+                    st.plotly_chart(fig_temporal)
+                else:
+                    st.warning("No temporal data available for analysis")
+        
+            with analysis_tabs[6]:  # Predictive Insights
+                st.subheader("Network Predictive Analysis")
+                
+                # Link prediction methods
+                st.write("### Link Prediction")
+                prediction_methods = {
+                    'Common Neighbors': nx.resource_allocation_index,
+                    'Jaccard Coefficient': nx.jaccard_coefficient,
+                    'Adamic-Adar': nx.adamic_adar_index
+                }
+                
+                # Select prediction method
+                selected_method = st.selectbox(
+                    "Select Link Prediction Method", 
+                    list(prediction_methods.keys())
+                )
+                
+                # Get non-existing edges
+                non_edges = list(nx.non_edges(G))
+                
+                # Compute predictions
+                predictions = list(prediction_methods[selected_method](G, non_edges))
+                
+                # Sort and display top potential links
+                predictions.sort(key=lambda x: x[2], reverse=True)
+                top_predictions = predictions[:10]
+                
+                st.write("### Top 10 Potential Links")
+                prediction_df = pd.DataFrame(
+                    top_predictions, 
+                    columns=['Source', 'Target', 'Prediction Score']
+                )
+                st.dataframe(prediction_df)
+                
+                # Visualization of prediction scores
+                fig_predictions = go.Figure(data=[go.Histogram(x=[p[2] for p in top_predictions])])
+                fig_predictions.update_layout(
+                    title=f"Distribution of {selected_method} Prediction Scores",
+                    xaxis_title="Prediction Score",
+                    yaxis_title="Frequency"
+                )
+                st.plotly_chart(fig_predictions)
 
     except Exception as e:
         st.error(f"Application error: {str(e)}")
