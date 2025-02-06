@@ -715,126 +715,124 @@ def main():
                         st.plotly_chart(viz)
         
            with explorer_tab:
-        st.header("Network Explorer")
-        
-        # Create two columns for controls and analysis
-        control_col, analysis_col = st.columns([1, 2])
-        
-        with control_col:
-            # Node selection for detailed exploration
-            selected_node = st.selectbox(
-                "Select Node to Explore",
-                options=sorted([node["id"] for node in nodes_data])
-            )
-            
-            # Filtering controls
-            st.subheader("Filter Network")
-            node_types = st.multiselect(
-                "Filter by Node Types",
-                options=sorted(set(node["type"] for node in nodes_data))
-            )
-            
-            min_degree = st.slider(
-                "Minimum Degree",
-                min_value=1,
-                max_value=max(dict(analyzer.G.degree()).values()),
-                value=1
-            )
-            
-            edge_weights = [d.get("score", 0.0) for u, v, d in analyzer.G.edges(data=True)]
-            min_weight = st.slider(
-                "Minimum Edge Weight",
-                min_value=0.0,
-                max_value=max(edge_weights),
-                value=0.0,
-                step=0.1
-            )
-        
-        with analysis_col:
-            if selected_node:
-                # Get node details from network explorer
-                cluster_data = analyzer.network_explorer.cluster_interaction_analysis()
+                st.header("Network Explorer")
+                control_col, analysis_col = st.columns([1, 2])
                 
-                # Display node information
-                st.subheader(f"Analysis for Node: {selected_node}")
-                
-                # Get node data
-                node_data = next((node for node in nodes_data if node["id"] == selected_node), None)
-                if node_data:
-                    info_cols = st.columns(3)
-                    with info_cols[0]:
-                        st.metric("Type", node_data.get("type", "Unknown"))
-                    with info_cols[1]:
-                        st.metric("Cluster", node_data.get("cluster", "Unknown"))
-                    with info_cols[2]:
-                        st.metric("Degree", analyzer.G.degree(selected_node))
+                with control_col:
+                    # Node selection for detailed exploration
+                    selected_node = st.selectbox(
+                        "Select Node to Explore",
+                        options=sorted([node["id"] for node in nodes_data])
+                    )
                     
-                    # Show cluster interactions if available
-                    if node_data["cluster"] in cluster_data.get("cluster_details", {}):
-                        cluster_info = cluster_data["cluster_details"][node_data["cluster"]]
-                        st.subheader("Cluster Information")
-                        
-                        metric_cols = st.columns(3)
-                        with metric_cols[0]:
-                            st.metric("Total Nodes in Cluster", 
-                                    cluster_info.get("total_nodes", 0))
-                        with metric_cols[1]:
-                            st.metric("Node Types", 
-                                    len(cluster_info.get("node_types", {})))
-                        with metric_cols[2]:
-                            st.metric("Connected Clusters",
-                                    len(cluster_info.get("inter_cluster_connections", {})))
-                        
-                        # Show node type distribution in cluster
-                        if "node_types" in cluster_info:
-                            st.write("Node Type Distribution in Cluster")
-                            st.bar_chart(cluster_info["node_types"])
-                
-                # Get and display paper distribution if available
-                paper_data = analyzer.network_explorer.paper_distribution_analysis()
-                if paper_data:
-                    st.subheader("Publication Analysis")
-                    if 'statistics' in paper_data:
-                        stats = paper_data['statistics']
-                        stat_cols = st.columns(3)
-                        with stat_cols[0]:
-                            st.metric("Total Papers", stats.get("total_papers", 0))
-                        with stat_cols[1]:
-                            st.metric("Avg Nodes per Paper", 
-                                    f"{stats.get('avg_nodes_per_paper', 0):.2f}")
-                        with stat_cols[2]:
-                            st.metric("Avg Edges per Paper",
-                                    f"{stats.get('avg_edges_per_paper', 0):.2f}")
-                
-                # Display network visualizations if available
-                if 'visualizations' in paper_data:
-                    for viz_name, viz in paper_data['visualizations'].items():
-                        st.plotly_chart(viz)
-            
-            # Display filtered network view if filters are applied
-            if any([node_types, min_degree > 1, min_weight > 0.0]):
-                st.subheader("Filtered Network View")
-                filtered_view = analyzer.network_explorer.get_filtered_view(
-                    node_types=node_types,
-                    min_degree=min_degree,
-                    min_weight=min_weight
-                )
-                
-                # Display filtered network statistics
-                if filtered_view:
-                    filter_cols = st.columns(3)
-                    with filter_cols[0]:
-                        st.metric("Filtered Nodes", filtered_view.get("filtered_nodes", 0))
-                    with filter_cols[1]:
-                        st.metric("Filtered Edges", filtered_view.get("filtered_edges", 0))
-                    with filter_cols[2]:
-                        st.metric("Filtered Density", 
-                                f"{filtered_view.get('filtered_density', 0):.3f}")
+                    # Filtering controls
+                    st.subheader("Filter Network")
+                    node_types = st.multiselect(
+                        "Filter by Node Types",
+                        options=sorted(set(node["type"] for node in nodes_data))
+                    )
                     
-                    # Display type distribution in filtered network
-                    if "type_distribution" in filtered_view:
-                        st.write("Node Type Distribution in Filtered Network")
-                        st.bar_chart(filtered_view["type_distribution"])
+                    min_degree = st.slider(
+                        "Minimum Degree",
+                        min_value=1,
+                        max_value=max(dict(analyzer.G.degree()).values()),
+                        value=1
+                    )
+                    
+                    edge_weights = [d.get("score", 0.0) for u, v, d in analyzer.G.edges(data=True)]
+                    min_weight = st.slider(
+                        "Minimum Edge Weight",
+                        min_value=0.0,
+                        max_value=max(edge_weights),
+                        value=0.0,
+                        step=0.1
+                    )
+                
+                with analysis_col:
+                    if selected_node:
+                        # Get node details from network explorer
+                        cluster_data = analyzer.network_explorer.cluster_interaction_analysis()
+                        
+                        # Display node information
+                        st.subheader(f"Analysis for Node: {selected_node}")
+                        
+                        # Get node data
+                        node_data = next((node for node in nodes_data if node["id"] == selected_node), None)
+                        if node_data:
+                            info_cols = st.columns(3)
+                            with info_cols[0]:
+                                st.metric("Type", node_data.get("type", "Unknown"))
+                            with info_cols[1]:
+                                st.metric("Cluster", node_data.get("cluster", "Unknown"))
+                            with info_cols[2]:
+                                st.metric("Degree", analyzer.G.degree(selected_node))
+                            
+                            # Show cluster interactions if available
+                            if node_data["cluster"] in cluster_data.get("cluster_details", {}):
+                                cluster_info = cluster_data["cluster_details"][node_data["cluster"]]
+                                st.subheader("Cluster Information")
+                                
+                                metric_cols = st.columns(3)
+                                with metric_cols[0]:
+                                    st.metric("Total Nodes in Cluster", 
+                                            cluster_info.get("total_nodes", 0))
+                                with metric_cols[1]:
+                                    st.metric("Node Types", 
+                                            len(cluster_info.get("node_types", {})))
+                                with metric_cols[2]:
+                                    st.metric("Connected Clusters",
+                                            len(cluster_info.get("inter_cluster_connections", {})))
+                                
+                                # Show node type distribution in cluster
+                                if "node_types" in cluster_info:
+                                    st.write("Node Type Distribution in Cluster")
+                                    st.bar_chart(cluster_info["node_types"])
+                        
+                        # Get and display paper distribution if available
+                        paper_data = analyzer.network_explorer.paper_distribution_analysis()
+                        if paper_data:
+                            st.subheader("Publication Analysis")
+                            if 'statistics' in paper_data:
+                                stats = paper_data['statistics']
+                                stat_cols = st.columns(3)
+                                with stat_cols[0]:
+                                    st.metric("Total Papers", stats.get("total_papers", 0))
+                                with stat_cols[1]:
+                                    st.metric("Avg Nodes per Paper", 
+                                            f"{stats.get('avg_nodes_per_paper', 0):.2f}")
+                                with stat_cols[2]:
+                                    st.metric("Avg Edges per Paper",
+                                            f"{stats.get('avg_edges_per_paper', 0):.2f}")
+                        
+                        # Display network visualizations if available
+                        if 'visualizations' in paper_data:
+                            for viz_name, viz in paper_data['visualizations'].items():
+                                st.plotly_chart(viz)
+                    
+                    # Display filtered network view if filters are applied
+                    if any([node_types, min_degree > 1, min_weight > 0.0]):
+                        st.subheader("Filtered Network View")
+                        filtered_view = analyzer.network_explorer.get_filtered_view(
+                            node_types=node_types,
+                            min_degree=min_degree,
+                            min_weight=min_weight
+                        )
+                        
+                        # Display filtered network statistics
+                        if filtered_view:
+                            filter_cols = st.columns(3)
+                            with filter_cols[0]:
+                                st.metric("Filtered Nodes", filtered_view.get("filtered_nodes", 0))
+                            with filter_cols[1]:
+                                st.metric("Filtered Edges", filtered_view.get("filtered_edges", 0))
+                            with filter_cols[2]:
+                                st.metric("Filtered Density", 
+                                        f"{filtered_view.get('filtered_density', 0):.3f}")
+                            
+                            # Display type distribution in filtered network
+                            if "type_distribution" in filtered_view:
+                                st.write("Node Type Distribution in Filtered Network")
+                                st.bar_chart(filtered_view["type_distribution"])
 
     except Exception as e:
         st.error(f"Application error: {str(e)}")
