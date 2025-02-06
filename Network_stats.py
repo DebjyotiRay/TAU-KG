@@ -115,28 +115,36 @@ class NetworkAnalyzer:
     def get_pathway_analysis(self):
         """Analyze pathway connections and influences"""
         pathway_nodes = [n for n, d in self.G.nodes(data=True)
-                        if d["type"] == "pathway"]
+                        if d.get("type", "") == "pathway"]
+        
+        if not pathway_nodes:
+            return {}  # Return empty dict if no pathway nodes found
 
         pathway_stats = {}
         for pathway in pathway_nodes:
             neighbors = list(self.G.neighbors(pathway))
-            neighbor_types = Counter([self.G.nodes[n]["type"] for n in neighbors])
+            if not neighbors:
+                continue  # Skip pathways with no connections
+                
+            neighbor_types = Counter([self.G.nodes[n].get("type", "Unknown") 
+                                    for n in neighbors])
             neighbor_clusters = Counter([self.G.nodes[n].get("cluster", "Unknown") 
                                       for n in neighbors])
 
             # Calculate interaction strengths
-            interaction_strengths = [d["weight"] 
+            interaction_strengths = [d.get("weight", 0.0) 
                                    for u, v, d in self.G.edges(pathway, data=True)]
-
-            pathway_stats[pathway] = {
-                "Total Connections": len(neighbors),
-                "Connected Types": dict(neighbor_types),
-                "Connected Clusters": dict(neighbor_clusters),
-                "Average Interaction Strength": np.mean(interaction_strengths),
-                "Max Interaction Strength": max(interaction_strengths),
-                "Interaction Strength Distribution": np.percentile(
-                    interaction_strengths, [25, 50, 75]).tolist()
-            }
+            
+            if interaction_strengths:  # Only add stats if there are interactions
+                pathway_stats[pathway] = {
+                    "Total Connections": len(neighbors),
+                    "Connected Types": dict(neighbor_types),
+                    "Connected Clusters": dict(neighbor_clusters),
+                    "Average Interaction Strength": np.mean(interaction_strengths),
+                    "Max Interaction Strength": max(interaction_strengths),
+                    "Interaction Strength Distribution": np.percentile(
+                        interaction_strengths, [25, 50, 75]).tolist()
+                }
 
         return pathway_stats
 
@@ -360,6 +368,39 @@ class NetworkAnalyzer:
         df_types = pd.DataFrame(list(node_types.items()),
                               columns=["Type", "Count"])
         st.bar_chart(df_types.set_index("Type"))
+
+        # Pathway Analysis (Collapsible)
+        with st.expander("🔄 Pathway Analysis", expanded=False):
+            pathway_stats = self.get_pathway_analysis()
+            if pathway_stats:
+                for pathway, stats in pathway_stats.items():
+                    st.write(f"### {pathway}")
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        st.metric("Total Connections", stats['Total Connections'])
+                    with col2:
+                        st.metric("Avg Interaction Strength", 
+                                f"{stats['Average Interaction Strength']:.2f}")
+                    
+                    # Show connected types as a bar chart
+                    if stats['Connected Types']:
+                        connected_types_df = pd.DataFrame(
+                            list(stats['Connected Types'].items()),
+                            columns=['Type', 'Count']
+                        )
+                        st.write("Connected Node Types:")
+                        st.bar_chart(connected_types_df.set_index('Type'))
+                    
+                    # Show cluster distribution
+                    if stats['Connected Clusters']:
+                        cluster_df = pd.DataFrame(
+                            list(stats['Connected Clusters'].items()),
+                            columns=['Cluster', 'Count']
+                        )
+                        st.write("Cluster Distribution:")
+                        st.bar_chart(cluster_df.set_index('Cluster'))
+            else:
+                st.info("No pathway data available in the network")
 
         # Pathway Analysis (Collapsible)
         with st.expander("🔄 Pathway Analysis", expanded=False):
