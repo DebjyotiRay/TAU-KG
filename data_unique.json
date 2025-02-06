@@ -1,48 +1,6 @@
 {
   "nodes": [
     {
-      "id": "CSN5i3",
-      "type": "gene",
-      "cluster": "MAPK & Axon Guidance",
-      "size": 0.1,
-      "PMID": "38917806"
-    },
-    {
-      "id": "Neurodegeneration",
-      "type": "process",
-      "cluster": "MAPK & Axon Guidance",
-      "size": 0.1,
-      "PMID": "38917806"
-    },
-    {
-      "id": "FMR1",
-      "type": "gene",
-      "cluster": "MAPK & Axon Guidance",
-      "size": 0.1,
-      "PMID": "38917806"
-    },
-    {
-      "id": "FXR2",
-      "type": "gene",
-      "cluster": "MAPK & Axon Guidance",
-      "size": 0.1,
-      "PMID": "38917806"
-    },
-    {
-      "id": "TFEB",
-      "type": "gene",
-      "cluster": "MAPK & Axon Guidance",
-      "size": 0.1,
-      "PMID": "38917806"
-    },
-    {
-      "id": "Lysosome",
-      "type": "organelle",
-      "cluster": "MAPK & Axon Guidance",
-      "size": 0.1,
-      "PMID": "38917806"
-    },
-    {
       "id": "2N4R tau (P301L-EGFP)",
       "type": "protein",
       "cluster": "Tauopathy",
@@ -92,6 +50,13 @@
       "PMID": "38917806"
     },
     {
+      "id": "ARAF",
+      "type": "gene",
+      "cluster": "Other signaling",
+      "size": 0.1,
+      "PMID": 33536571
+    },
+    {
       "id": "ARIH2",
       "type": "gene",
       "cluster": "Ubiquitin/Proteasome",
@@ -107,10 +72,10 @@
     },
     {
       "id": "Autophagy",
-      "type": "pathway",
-      "cluster": "Protein Clearance",
-      "size": 2.3,
-      "PMID": 37398204
+      "type": "process",
+      "cluster": "Autophagy",
+      "size": 2.5,
+      "PMID": 33536571
     },
     {
       "id": "Axon Guidance",
@@ -204,6 +169,13 @@
       "PMID": "37398204"
     },
     {
+      "id": "CDK9",
+      "type": "gene",
+      "cluster": "Other signaling",
+      "size": 0.1,
+      "PMID": 33536571
+    },
+    {
       "id": "CDKN1A",
       "type": "gene",
       "cluster": "Tau Aggregation & Inflammation",
@@ -281,6 +253,13 @@
       "PMID": 37398204
     },
     {
+      "id": "Canonical glycolysis",
+      "type": "process",
+      "cluster": "Mitochondrial Morphology & Bioenergetics",
+      "size": 1.8,
+      "PMID": 33536571
+    },
+    {
       "id": "Cas9",
       "type": "protein",
       "cluster": "CRISPR",
@@ -300,6 +279,13 @@
       "cluster": "Chromatin Modification",
       "size": 0.69,
       "PMID": 37398204
+    },
+    {
+      "id": "Complex I biogenesis",
+      "type": "process",
+      "cluster": "Mitochondrial Morphology & Bioenergetics",
+      "size": 0.1,
+      "PMID": 33536571
     },
     {
       "id": "Corticobasal Degeneration",
@@ -384,6 +370,13 @@
       "cluster": "Mitochondrial Function",
       "size": 1.39,
       "PMID": 37398204
+    },
+    {
+      "id": "Elongated mitochondria",
+      "type": "phenotype",
+      "cluster": "Mitochondrial Morphology & Bioenergetics",
+      "size": 1.8,
+      "PMID": 33536571
     },
     {
       "id": "FACS sorted low tau population",
@@ -477,6 +470,13 @@
       "PMID": "37398204"
     },
     {
+      "id": "Fragmented mitochondria",
+      "type": "phenotype",
+      "cluster": "Mitochondrial Morphology & Bioenergetics",
+      "size": 1.8,
+      "PMID": 33536571
+    },
+    {
       "id": "Frontotemporal Dementia (FTD)",
       "type": "disease",
       "cluster": "Tauopathy",
@@ -509,6 +509,13 @@
       "type": "organelle",
       "cluster": "Cellular Organelles",
       "size": 0.69,
+      "PMID": 33536571
+    },
+    {
+      "id": "HDAC4",
+      "type": "gene",
+      "cluster": "Other signaling",
+      "size": 0.1,
       "PMID": 33536571
     },
     {
@@ -568,6 +575,13 @@
       "PMID": "37398204"
     },
     {
+      "id": "IMPA1",
+      "type": "gene",
+      "cluster": "Mitochondrial Morphology & Bioenergetics",
+      "size": 0.1,
+      "PMID": 33536571
+    },
+    {
       "id": "ING1",
       "type": "gene",
       "cluster": "Mitochondrial Morphology",
@@ -608,6 +622,13 @@
       "cluster": "Chromatin Modification",
       "size": 0.69,
       "PMID": 34127790
+    },
+    {
+      "id": "KDM7A",
+      "type": "gene",
+      "cluster": "Other signaling",
+      "size": 0.1,
+      "PMID": 33536571
     },
     {
       "id": "KEAP1",
@@ -659,11 +680,25 @@
       "PMID": "38917806"
     },
     {
+      "id": "LTK",
+      "type": "gene",
+      "cluster": "Other signaling",
+      "size": 0.1,
+      "PMID": 33536571
+    },
+    {
       "id": "LYN",
       "type": "gene",
       "cluster": "Tau Aggregation & Inflammation",
       "size": 0.1,
       "PMID": "37398204"
+    },
+    {
+      "id": "Lysosome homeostasis",
+      "type": "process",
+      "cluster": "Lysosome homeostasis",
+      "size": 1.2,
+      "PMID": 33536571
     },
     {
       "id": "Lysosomes",
@@ -678,6 +713,20 @@
       "cluster": "MAPK & Axon Guidance",
       "size": 0.1,
       "PMID": "37398204"
+    },
+    {
+      "id": "MAP3K7CL",
+      "type": "gene",
+      "cluster": "Other signaling",
+      "size": 0.1,
+      "PMID": 33536571
+    },
+    {
+      "id": "MAP3K9",
+      "type": "gene",
+      "cluster": "Other signaling",
+      "size": 0.1,
+      "PMID": 33536571
     },
     {
       "id": "MAP4K1",
@@ -785,6 +834,13 @@
       "PMID": "38917806"
     },
     {
+      "id": "MTA3",
+      "type": "gene",
+      "cluster": "Other signaling",
+      "size": 0.1,
+      "PMID": 33536571
+    },
+    {
       "id": "MTM1",
       "type": "gene",
       "cluster": "Autophagy",
@@ -820,10 +876,45 @@
       "PMID": "37398204"
     },
     {
+      "id": "Mitochondrial fatty acid beta-oxidation",
+      "type": "process",
+      "cluster": "Mitochondrial Morphology & Bioenergetics",
+      "size": 0.1,
+      "PMID": 33536571
+    },
+    {
+      "id": "Mitochondrial function",
+      "type": "process",
+      "cluster": "Mitochondrial",
+      "size": 0.2,
+      "PMID": 33536571
+    },
+    {
+      "id": "Mitochondrial membrane potential",
+      "type": "process",
+      "cluster": "Mitochondrial Morphology & Bioenergetics",
+      "size": 0.1,
+      "PMID": 33536571
+    },
+    {
       "id": "Mitochondrial morphology",
-      "type": "phenotype",
-      "cluster": "Mitochondrial Function",
-      "size": 0.69,
+      "type": "process",
+      "cluster": "Mitochondrial Morphology & Bioenergetics",
+      "size": 2.0,
+      "PMID": 33536571
+    },
+    {
+      "id": "Mitochondrial translation",
+      "type": "process",
+      "cluster": "Mitochondrial Morphology & Bioenergetics",
+      "size": 0.1,
+      "PMID": 33536571
+    },
+    {
+      "id": "Mitochondrial transport",
+      "type": "process",
+      "cluster": "Mitochondrial Morphology & Bioenergetics",
+      "size": 0.1,
       "PMID": 33536571
     },
     {
@@ -853,6 +944,13 @@
       "cluster": "Tauopathy",
       "size": 1.0,
       "PMID": 37398204
+    },
+    {
+      "id": "NF-\u00ce\u00baB pathway",
+      "type": "pathway",
+      "cluster": "Tauopathy",
+      "size": 1.0,
+      "PMID": 33536571
     },
     {
       "id": "NF-\u03baB Pathway",
@@ -946,6 +1044,20 @@
       "PMID": 37398204
     },
     {
+      "id": "Oxidative phosphorylation",
+      "type": "process",
+      "cluster": "Mitochondrial Morphology & Bioenergetics",
+      "size": 0.1,
+      "PMID": 33536571
+    },
+    {
+      "id": "Oxygen Consumption Rate (OCR)",
+      "type": "measurement",
+      "cluster": "Mitochondrial Morphology & Bioenergetics",
+      "size": 0.1,
+      "PMID": 33536571
+    },
+    {
       "id": "PA28",
       "type": "protein complex",
       "cluster": "Proteasome Activation",
@@ -964,6 +1076,27 @@
       "type": "cell line clone",
       "cluster": "Cell Line",
       "size": 1.1,
+      "PMID": 33536571
+    },
+    {
+      "id": "PFKFB4",
+      "type": "gene",
+      "cluster": "Other signaling",
+      "size": 0.1,
+      "PMID": 33536571
+    },
+    {
+      "id": "PGK1",
+      "type": "gene",
+      "cluster": "Other signaling",
+      "size": 0.1,
+      "PMID": 33536571
+    },
+    {
+      "id": "PHF11",
+      "type": "gene",
+      "cluster": "Other signaling",
+      "size": 0.1,
       "PMID": 33536571
     },
     {
@@ -1021,6 +1154,13 @@
       "cluster": "Autophagy",
       "size": 0.1,
       "PMID": "37398204"
+    },
+    {
+      "id": "PKLR",
+      "type": "gene",
+      "cluster": "Other signaling",
+      "size": 0.1,
+      "PMID": 33536571
     },
     {
       "id": "PLXNA1",
@@ -1184,6 +1324,13 @@
       "PMID": "37398204"
     },
     {
+      "id": "Phosphatidylinositol-3-phosphate biosynthetic process",
+      "type": "process",
+      "cluster": "Autophagy",
+      "size": 0.1,
+      "PMID": 33536571
+    },
+    {
       "id": "Pick\u2019s Disease",
       "type": "disease",
       "cluster": "Tauopathy",
@@ -1275,6 +1422,13 @@
       "PMID": "37398204"
     },
     {
+      "id": "Respiratory electron transport chain",
+      "type": "process",
+      "cluster": "Mitochondrial Morphology & Bioenergetics",
+      "size": 0.1,
+      "PMID": 33536571
+    },
+    {
       "id": "Respiratory function",
       "type": "phenotype",
       "cluster": "Mitochondrial Function",
@@ -1301,6 +1455,13 @@
       "cluster": "Neddylation",
       "size": 0.69,
       "PMID": 34127790
+    },
+    {
+      "id": "SETDB2",
+      "type": "gene",
+      "cluster": "Other signaling",
+      "size": 0.1,
+      "PMID": 33536571
     },
     {
       "id": "SGK1",
@@ -1350,6 +1511,13 @@
       "cluster": "Gene Fingerprinting",
       "size": 0.1,
       "PMID": "37398204"
+    },
+    {
+      "id": "SMARCA2",
+      "type": "gene",
+      "cluster": "Other signaling",
+      "size": 0.1,
+      "PMID": 33536571
     },
     {
       "id": "SNRK",
@@ -1411,8 +1579,8 @@
       "id": "STK11",
       "type": "gene",
       "cluster": "Tauopathy",
-      "size": 0.1,
-      "PMID": "37398204"
+      "size": 0.3,
+      "PMID": 33536571
     },
     {
       "id": "STRADA",
@@ -1420,6 +1588,27 @@
       "cluster": "Tauopathy",
       "size": 0.69,
       "PMID": "37398204"
+    },
+    {
+      "id": "Seahorse ATP Production Rate assay",
+      "type": "assay",
+      "cluster": "Mitochondrial Morphology & Bioenergetics",
+      "size": 0.1,
+      "PMID": 33536571
+    },
+    {
+      "id": "Seahorse Glycolytic Rate assay",
+      "type": "assay",
+      "cluster": "Mitochondrial Morphology & Bioenergetics",
+      "size": 0.1,
+      "PMID": 33536571
+    },
+    {
+      "id": "Seahorse Mito Stress Test",
+      "type": "assay",
+      "cluster": "Mitochondrial Morphology & Bioenergetics",
+      "size": 0.1,
+      "PMID": 33536571
     },
     {
       "id": "Synthetic tau fibrils",
@@ -1436,6 +1625,13 @@
       "PMID": 37398204
     },
     {
+      "id": "TCA cycle",
+      "type": "process",
+      "cluster": "Mitochondrial Morphology & Bioenergetics",
+      "size": 0.1,
+      "PMID": 33536571
+    },
+    {
       "id": "TFEB",
       "type": "protein",
       "cluster": "Autophagy & Lysosome",
@@ -1448,6 +1644,13 @@
       "cluster": "Tau Aggregation & Inflammation",
       "size": 0.1,
       "PMID": "37398204"
+    },
+    {
+      "id": "TMRE labeling",
+      "type": "assay",
+      "cluster": "Mitochondrial Morphology & Bioenergetics",
+      "size": 0.1,
+      "PMID": 33536571
     },
     {
       "id": "TNFRSF1A",
@@ -1681,6 +1884,13 @@
       "PMID": 37398204
     },
     {
+      "id": "p62/SQSTM1",
+      "type": "protein",
+      "cluster": "Tauopathy",
+      "size": 1.1,
+      "PMID": 33536571
+    },
+    {
       "id": "pS6",
       "type": "protein",
       "cluster": "mTOR Pathway",
@@ -1693,6 +1903,13 @@
       "cluster": "AD Neurodegeneration",
       "size": 2.08,
       "PMID": "38917806"
+    },
+    {
+      "id": "tau aggregation",
+      "type": "process",
+      "cluster": "Tauopathy",
+      "size": 2.5,
+      "PMID": 33536571
     }
   ],
   "edges": [
@@ -1718,10 +1935,28 @@
       "PMID": 33536571
     },
     {
+      "source": "ARAF",
+      "target": "tau aggregation",
+      "relation": "loss increases aggregation",
+      "score": 0.88
+    },
+    {
       "source": "ARIH2",
       "target": "Tau Protein",
       "relation": "initiates monoubiquitination",
       "score": 0.68
+    },
+    {
+      "source": "Autophagy",
+      "target": "LC3",
+      "relation": "stress increases LC3 puncta",
+      "score": 0.9
+    },
+    {
+      "source": "Autophagy",
+      "target": "Lysosome homeostasis",
+      "relation": "is coupled with",
+      "score": 0.85
     },
     {
       "source": "Autophagy",
@@ -1748,6 +1983,12 @@
       "score": 0.75
     },
     {
+      "source": "BRSK1",
+      "target": "tau aggregation",
+      "relation": "knockout increases aggregation",
+      "score": 0.95
+    },
+    {
       "source": "CAB39",
       "target": "STK11",
       "relation": "forms complex with",
@@ -1760,10 +2001,28 @@
       "score": 0.88
     },
     {
+      "source": "CAB39",
+      "target": "tau aggregation",
+      "relation": "knockout increases aggregation",
+      "score": 0.95
+    },
+    {
       "source": "CARD11",
       "target": "NF-\u03baB Pathway",
       "relation": "associates with",
       "score": 0.8
+    },
+    {
+      "source": "CARD11",
+      "target": "tau aggregation",
+      "relation": "associated with NF-\u00ce\u00baB pathway reducing aggregation",
+      "score": 0.9
+    },
+    {
+      "source": "CARD11",
+      "target": "tau aggregation",
+      "relation": "NF-\u00ce\u00baB associated; reduction decreases aggregation",
+      "score": 0.9
     },
     {
       "source": "CCL2",
@@ -1772,10 +2031,34 @@
       "score": 0.8
     },
     {
+      "source": "CCL2",
+      "target": "tau aggregation",
+      "relation": "CRISPR disruption reduces aggregation; RNA-seq shows induction by aggregates",
+      "score": 0.9
+    },
+    {
+      "source": "CCL2",
+      "target": "tau aggregation",
+      "relation": "CRISPR disruption reduces aggregation; aggregates induce expression",
+      "score": 0.9
+    },
+    {
+      "source": "CCL27",
+      "target": "tau aggregation",
+      "relation": "RNA-seq: aggregates induce expression",
+      "score": 0.9
+    },
+    {
       "source": "CCL8",
       "target": "Tau Aggregation",
       "relation": "reduces",
       "score": 0.8
+    },
+    {
+      "source": "CCL8",
+      "target": "tau aggregation",
+      "relation": "CRISPR disruption reduces aggregation",
+      "score": 0.9
     },
     {
       "source": "CD14",
@@ -1784,10 +2067,22 @@
       "score": 0.8
     },
     {
+      "source": "CD14",
+      "target": "tau aggregation",
+      "relation": "CRISPR disruption reduces aggregation",
+      "score": 0.9
+    },
+    {
       "source": "CD2",
       "target": "Tau Aggregation",
       "relation": "reduces",
       "score": 0.8
+    },
+    {
+      "source": "CD2",
+      "target": "tau aggregation",
+      "relation": "CRISPR disruption reduces aggregation",
+      "score": 0.9
     },
     {
       "source": "CD40",
@@ -1796,10 +2091,34 @@
       "score": 0.8
     },
     {
+      "source": "CD40",
+      "target": "tau aggregation",
+      "relation": "CRISPR disruption reduces aggregation",
+      "score": 0.9
+    },
+    {
       "source": "CD40LG",
       "target": "Tau Aggregation",
       "relation": "reduces",
       "score": 0.8
+    },
+    {
+      "source": "CD40LG",
+      "target": "tau aggregation",
+      "relation": "CRISPR disruption reduces aggregation",
+      "score": 0.9
+    },
+    {
+      "source": "CDK9",
+      "target": "tau aggregation",
+      "relation": "loss increases aggregation",
+      "score": 0.88
+    },
+    {
+      "source": "CDKN1A",
+      "target": "tau aggregation",
+      "relation": "RNA-seq: aggregates induce expression",
+      "score": 0.9
     },
     {
       "source": "CHIP",
@@ -1818,6 +2137,12 @@
       "target": "Tau Aggregation",
       "relation": "reduces",
       "score": 0.9
+    },
+    {
+      "source": "CHUK",
+      "target": "tau aggregation",
+      "relation": "IKK complex disruption reduces aggregation",
+      "score": 0.95
     },
     {
       "source": "CREBBP",
@@ -1844,10 +2169,28 @@
       "score": 0.8
     },
     {
+      "source": "CSNK2A1",
+      "target": "tau aggregation",
+      "relation": "associated with NF-\u00ce\u00baB pathway reducing aggregation",
+      "score": 0.9
+    },
+    {
+      "source": "CSNK2A1",
+      "target": "tau aggregation",
+      "relation": "NF-\u00ce\u00baB associated; reduction decreases aggregation",
+      "score": 0.9
+    },
+    {
       "source": "CSNK2B",
       "target": "Tau Aggregation",
       "relation": "reduces",
       "score": 0.8
+    },
+    {
+      "source": "CSNK2B",
+      "target": "tau aggregation",
+      "relation": "CRISPR disruption reduces aggregation",
+      "score": 0.9
     },
     {
       "source": "CTSD",
@@ -1916,10 +2259,22 @@
       "score": 0.75
     },
     {
+      "source": "DGKQ",
+      "target": "Mitochondrial function",
+      "relation": "disruption reduces mitochondrial volume",
+      "score": 0.88
+    },
+    {
       "source": "DNAJB11",
       "target": "Tau Aggregation",
       "relation": "regulates proteostasis impacting",
       "score": 0.75
+    },
+    {
+      "source": "EDA2R",
+      "target": "tau aggregation",
+      "relation": "RNA-seq: aggregates induce expression",
+      "score": 0.9
     },
     {
       "source": "EIF4G2",
@@ -1955,6 +2310,42 @@
       "source": "Electron Transport Chain",
       "target": "ROS Response",
       "relation": "generates",
+      "score": 0.9
+    },
+    {
+      "source": "Elongated mitochondria",
+      "target": "Canonical glycolysis",
+      "relation": "upregulates gene expression",
+      "score": 0.95
+    },
+    {
+      "source": "Elongated mitochondria",
+      "target": "Oxygen Consumption Rate (OCR)",
+      "relation": "increases",
+      "score": 0.95
+    },
+    {
+      "source": "Elongated mitochondria",
+      "target": "Seahorse ATP Production Rate assay",
+      "relation": "associated with increased glycolysis",
+      "score": 0.95
+    },
+    {
+      "source": "Elongated mitochondria",
+      "target": "Seahorse Glycolytic Rate assay",
+      "relation": "associated with increased glycolysis",
+      "score": 0.95
+    },
+    {
+      "source": "Elongated mitochondria",
+      "target": "Seahorse Mito Stress Test",
+      "relation": "measured by",
+      "score": 0.95
+    },
+    {
+      "source": "FAS",
+      "target": "tau aggregation",
+      "relation": "RNA-seq: aggregates induce expression",
       "score": 0.9
     },
     {
@@ -2003,6 +2394,12 @@
     },
     {
       "source": "FIG4",
+      "target": "Lysosome homeostasis",
+      "relation": "modulates",
+      "score": 0.92
+    },
+    {
+      "source": "FIG4",
       "target": "MTMR14",
       "relation": "functionally interacts with",
       "score": 0.75
@@ -2012,6 +2409,12 @@
       "target": "Lysosome",
       "relation": "modulates",
       "score": 0.8
+    },
+    {
+      "source": "FMR1",
+      "target": "tau aggregation",
+      "relation": "loss increases aggregation",
+      "score": 0.88
     },
     {
       "source": "FUS",
@@ -2026,10 +2429,64 @@
       "score": 0.8
     },
     {
+      "source": "FXR2",
+      "target": "tau aggregation",
+      "relation": "loss increases aggregation",
+      "score": 0.88
+    },
+    {
       "source": "FYN",
       "target": "Tau Aggregation",
       "relation": "decreases",
       "score": 0.85
+    },
+    {
+      "source": "FYN",
+      "target": "tau aggregation",
+      "relation": "disruption decreases aggregation",
+      "score": 0.9
+    },
+    {
+      "source": "Fragmented mitochondria",
+      "target": "Complex I biogenesis",
+      "relation": "downregulates gene expression",
+      "score": 0.9
+    },
+    {
+      "source": "Fragmented mitochondria",
+      "target": "Mitochondrial fatty acid beta-oxidation",
+      "relation": "downregulates gene expression",
+      "score": 0.9
+    },
+    {
+      "source": "Fragmented mitochondria",
+      "target": "Mitochondrial translation",
+      "relation": "downregulates gene expression",
+      "score": 0.9
+    },
+    {
+      "source": "Fragmented mitochondria",
+      "target": "Mitochondrial transport",
+      "relation": "downregulates gene expression",
+      "score": 0.9
+    },
+    {
+      "source": "Fragmented mitochondria",
+      "target": "Oxygen Consumption Rate (OCR)",
+      "relation": "decreases",
+      "score": 0.95
+    },
+    {
+      "source": "Fragmented mitochondria",
+      "target": "Respiratory electron transport chain",
+      "relation": "downregulates gene expression",
+      "score": 0.9
+    },
+    {
+      "source": "Fragmented mitochondria",
+      "target": "TCA cycle",
+      "relation": "downregulates gene expression",
+      "score": 0.9
     },
     {
       "source": "GSK3A",
@@ -2038,10 +2495,28 @@
       "score": 0.89
     },
     {
+      "source": "GSK3A",
+      "target": "tau aggregation",
+      "relation": "disruption disassembles aggregates",
+      "score": 0.95
+    },
+    {
       "source": "GSK3B",
       "target": "Tau Protein",
       "relation": "phosphorylates",
       "score": 0.9
+    },
+    {
+      "source": "GSK3B",
+      "target": "tau aggregation",
+      "relation": "disruption disassembles aggregates",
+      "score": 0.95
+    },
+    {
+      "source": "HDAC4",
+      "target": "tau aggregation",
+      "relation": "loss increases aggregation",
+      "score": 0.88
     },
     {
       "source": "High content imaging (HCI)",
@@ -2051,6 +2526,18 @@
       "PMID": 33536571
     },
     {
+      "source": "IFI44",
+      "target": "tau aggregation",
+      "relation": "RNA-seq: aggregates induce expression",
+      "score": 0.9
+    },
+    {
+      "source": "IGFBP3",
+      "target": "tau aggregation",
+      "relation": "RNA-seq: aggregates induce expression",
+      "score": 0.9
+    },
+    {
       "source": "IKBKB",
       "target": "NF-\u03baB Pathway",
       "relation": "activates",
@@ -2063,6 +2550,12 @@
       "score": 0.9
     },
     {
+      "source": "IKBKB",
+      "target": "tau aggregation",
+      "relation": "IKK complex disruption reduces aggregation",
+      "score": 0.95
+    },
+    {
       "source": "IKBKG",
       "target": "NF-\u03baB Pathway",
       "relation": "activates",
@@ -2073,6 +2566,30 @@
       "target": "Tau Aggregation",
       "relation": "reduces",
       "score": 0.9
+    },
+    {
+      "source": "IKBKG",
+      "target": "tau aggregation",
+      "relation": "IKK complex disruption reduces aggregation",
+      "score": 0.95
+    },
+    {
+      "source": "IL17D",
+      "target": "tau aggregation",
+      "relation": "RNA-seq: aggregates induce expression",
+      "score": 0.9
+    },
+    {
+      "source": "IL32",
+      "target": "tau aggregation",
+      "relation": "RNA-seq: aggregates induce expression",
+      "score": 0.9
+    },
+    {
+      "source": "IMPA1",
+      "target": "Canonical glycolysis",
+      "relation": "upregulates gene expression",
+      "score": 0.95
     },
     {
       "source": "ING1",
@@ -2081,10 +2598,28 @@
       "score": 0.75
     },
     {
+      "source": "ING1",
+      "target": "Mitochondrial function",
+      "relation": "disruption leads to elongated mitochondria",
+      "score": 0.88
+    },
+    {
+      "source": "INPP5E",
+      "target": "Lysosome homeostasis",
+      "relation": "modulates",
+      "score": 0.92
+    },
+    {
       "source": "IRAK2",
       "target": "Tau Aggregation",
       "relation": "reduces",
       "score": 0.8
+    },
+    {
+      "source": "IRAK2",
+      "target": "tau aggregation",
+      "relation": "CRISPR disruption reduces aggregation",
+      "score": 0.9
     },
     {
       "source": "Inflammatory signaling",
@@ -2094,10 +2629,22 @@
       "PMID": 33536571
     },
     {
+      "source": "Inflammatory signaling",
+      "target": "tau aggregation",
+      "relation": "modulates",
+      "score": 0.87
+    },
+    {
       "source": "KDM6A",
       "target": "Tau Protein",
       "relation": "reduces",
       "score": 0.8
+    },
+    {
+      "source": "KDM7A",
+      "target": "tau aggregation",
+      "relation": "loss increases aggregation",
+      "score": 0.88
     },
     {
       "source": "KEAP1",
@@ -2112,11 +2659,29 @@
       "score": 0.8
     },
     {
+      "source": "LAMP1",
+      "target": "Lysosome homeostasis",
+      "relation": "is marker of",
+      "score": 0.9
+    },
+    {
       "source": "LC3",
       "target": "Autophagy",
       "relation": "marks autophagosomes",
       "score": 0.9,
       "PMID": 33536571
+    },
+    {
+      "source": "LC3",
+      "target": "Autophagy",
+      "relation": "is marker of",
+      "score": 0.9
+    },
+    {
+      "source": "LTK",
+      "target": "tau aggregation",
+      "relation": "loss increases aggregation",
+      "score": 0.88
     },
     {
       "source": "LYN",
@@ -2125,11 +2690,35 @@
       "score": 0.8
     },
     {
+      "source": "LYN",
+      "target": "tau aggregation",
+      "relation": "associated with NF-\u00ce\u00baB pathway reducing aggregation",
+      "score": 0.9
+    },
+    {
+      "source": "LYN",
+      "target": "tau aggregation",
+      "relation": "NF-\u00ce\u00baB associated; reduction decreases aggregation",
+      "score": 0.9
+    },
+    {
       "source": "Lysosomes",
       "target": "Autophagy",
       "relation": "execute degradation",
       "score": 0.85,
       "PMID": 33536571
+    },
+    {
+      "source": "MAP3K7CL",
+      "target": "tau aggregation",
+      "relation": "loss increases aggregation",
+      "score": 0.88
+    },
+    {
+      "source": "MAP3K9",
+      "target": "tau aggregation",
+      "relation": "loss increases aggregation",
+      "score": 0.88
     },
     {
       "source": "MAP4K1",
@@ -2162,10 +2751,22 @@
       "score": 0.84
     },
     {
+      "source": "MARK1",
+      "target": "tau aggregation",
+      "relation": "knockout increases aggregation",
+      "score": 0.95
+    },
+    {
       "source": "MARK2",
       "target": "Tau Protein",
       "relation": "phosphorylates",
       "score": 0.85
+    },
+    {
+      "source": "MARK2",
+      "target": "tau aggregation",
+      "relation": "knockout increases aggregation; overexpression decreases aggregation",
+      "score": 0.95
     },
     {
       "source": "MFN1",
@@ -2174,10 +2775,22 @@
       "score": 0.8
     },
     {
+      "source": "MFN1",
+      "target": "Mitochondrial function",
+      "relation": "maintains normal mitochondrial morphology",
+      "score": 0.9
+    },
+    {
       "source": "MFN2",
       "target": "Mitochondrial Morphology",
       "relation": "maintains",
       "score": 0.8
+    },
+    {
+      "source": "MFN2",
+      "target": "Mitochondrial function",
+      "relation": "maintains normal mitochondrial morphology",
+      "score": 0.9
     },
     {
       "source": "MLN4924",
@@ -2192,10 +2805,22 @@
       "score": 0.9
     },
     {
+      "source": "MTA3",
+      "target": "tau aggregation",
+      "relation": "loss increases aggregation",
+      "score": 0.88
+    },
+    {
       "source": "MTMR14",
       "target": "INPP5E",
       "relation": "regulates",
       "score": 0.7
+    },
+    {
+      "source": "MTMR14",
+      "target": "Lysosome homeostasis",
+      "relation": "modulates",
+      "score": 0.92
     },
     {
       "source": "MTOR",
@@ -2228,11 +2853,22 @@
       "score": 0.85
     },
     {
+      "source": "Mitochondrial function",
+      "target": "Respiratory function",
+      "relation": "correlates with",
+      "score": 0.85
+    },
+    {
+      "source": "Mitochondrial morphology",
+      "target": "Canonical glycolysis",
+      "relation": "correlates with",
+      "score": 0.9
+    },
+    {
       "source": "Mitochondrial morphology",
       "target": "Respiratory function",
       "relation": "correlates with",
-      "score": 0.85,
-      "PMID": 33536571
+      "score": 0.9
     },
     {
       "source": "Multiplexed gRNAs",
@@ -2271,6 +2907,12 @@
       "relation": "modulates",
       "score": 0.8,
       "PMID": 33536571
+    },
+    {
+      "source": "NF-\u03baB pathway",
+      "target": "tau aggregation",
+      "relation": "modulates",
+      "score": 0.88
     },
     {
       "source": "NLRP3",
@@ -2339,6 +2981,24 @@
       "score": 1.0
     },
     {
+      "source": "PFKFB4",
+      "target": "tau aggregation",
+      "relation": "loss increases aggregation",
+      "score": 0.88
+    },
+    {
+      "source": "PGK1",
+      "target": "tau aggregation",
+      "relation": "loss increases aggregation",
+      "score": 0.88
+    },
+    {
+      "source": "PHF11",
+      "target": "tau aggregation",
+      "relation": "loss increases aggregation",
+      "score": 0.88
+    },
+    {
       "source": "PHOX2A",
       "target": "Tau Protein",
       "relation": "increases",
@@ -2355,6 +3015,18 @@
       "target": "Tau Aggregation",
       "relation": "increases",
       "score": 0.85
+    },
+    {
+      "source": "PIK3C2B",
+      "target": "tau aggregation",
+      "relation": "CRISPR perturbation increases aggregation",
+      "score": 0.92
+    },
+    {
+      "source": "PIK3C3",
+      "target": "Autophagy",
+      "relation": "initiates",
+      "score": 0.96
     },
     {
       "source": "PIK3C3",
@@ -2375,10 +3047,22 @@
       "score": 0.85
     },
     {
+      "source": "PIK3CA",
+      "target": "tau aggregation",
+      "relation": "CRISPR perturbation increases aggregation",
+      "score": 0.92
+    },
+    {
       "source": "PIK3CD",
       "target": "Tau Aggregation",
       "relation": "increases",
       "score": 0.85
+    },
+    {
+      "source": "PIK3CD",
+      "target": "tau aggregation",
+      "relation": "CRISPR perturbation increases aggregation",
+      "score": 0.92
     },
     {
       "source": "PIK3CG",
@@ -2387,16 +3071,58 @@
       "score": 0.85
     },
     {
+      "source": "PIK3CG",
+      "target": "tau aggregation",
+      "relation": "CRISPR perturbation increases aggregation",
+      "score": 0.92
+    },
+    {
+      "source": "PIK3R4",
+      "target": "Autophagy",
+      "relation": "initiates",
+      "score": 0.96
+    },
+    {
+      "source": "PKLR",
+      "target": "tau aggregation",
+      "relation": "loss increases aggregation",
+      "score": 0.88
+    },
+    {
+      "source": "PPIP5K1",
+      "target": "Canonical glycolysis",
+      "relation": "upregulates gene expression",
+      "score": 0.95
+    },
+    {
       "source": "PPIP5K1",
       "target": "Mitochondrial Morphology",
       "relation": "promotes elongation",
       "score": 0.75
     },
     {
+      "source": "PPIP5K1",
+      "target": "Mitochondrial function",
+      "relation": "disruption leads to elongated mitochondria",
+      "score": 0.88
+    },
+    {
+      "source": "PPM1E",
+      "target": "Autophagy",
+      "relation": "promotes",
+      "score": 0.9
+    },
+    {
       "source": "PPM1N",
       "target": "Mitochondrial Morphology",
       "relation": "promotes elongation",
       "score": 0.75
+    },
+    {
+      "source": "PPM1N",
+      "target": "Mitochondrial function",
+      "relation": "disruption leads to elongated mitochondria",
+      "score": 0.88
     },
     {
       "source": "PPP1CB",
@@ -2409,6 +3135,18 @@
       "target": "Neurodegeneration",
       "relation": "regulates viability",
       "score": 0.7
+    },
+    {
+      "source": "PRKAA1",
+      "target": "Autophagy",
+      "relation": "activates",
+      "score": 0.95
+    },
+    {
+      "source": "PRKACA",
+      "target": "Autophagy",
+      "relation": "promotes",
+      "score": 0.9
     },
     {
       "source": "PSAP",
@@ -2427,6 +3165,12 @@
       "target": "PA28",
       "relation": "forms subunit",
       "score": 0.75
+    },
+    {
+      "source": "Phosphatidylinositol-3-phosphate biosynthetic process",
+      "target": "Autophagy",
+      "relation": "is enriched in",
+      "score": 0.8
     },
     {
       "source": "Proteostasis",
@@ -2451,6 +3195,12 @@
       "target": "Tau Aggregation",
       "relation": "reduces",
       "score": 0.8
+    },
+    {
+      "source": "RIPK1",
+      "target": "tau aggregation",
+      "relation": "CRISPR disruption reduces aggregation",
+      "score": 0.9
     },
     {
       "source": "RNA-seq analysis",
@@ -2496,6 +3246,18 @@
       "score": 0.8
     },
     {
+      "source": "SETDB2",
+      "target": "tau aggregation",
+      "relation": "loss increases aggregation",
+      "score": 0.88
+    },
+    {
+      "source": "SGK1",
+      "target": "Autophagy",
+      "relation": "promotes",
+      "score": 0.9
+    },
+    {
       "source": "SH-SY5Y cell line",
       "target": "Cas9",
       "relation": "stably expresses",
@@ -2514,10 +3276,34 @@
       "score": 0.75
     },
     {
+      "source": "SIK3",
+      "target": "tau aggregation",
+      "relation": "knockout increases aggregation",
+      "score": 0.95
+    },
+    {
+      "source": "SIRT2",
+      "target": "Autophagy",
+      "relation": "inhibits",
+      "score": 0.93
+    },
+    {
       "source": "SIRT2",
       "target": "LAMP1",
       "relation": "regulates",
       "score": 0.8
+    },
+    {
+      "source": "SIRT2",
+      "target": "tau aggregation",
+      "relation": "loss increases aggregation",
+      "score": 0.88
+    },
+    {
+      "source": "SIRT3",
+      "target": "Autophagy",
+      "relation": "inhibits",
+      "score": 0.93
     },
     {
       "source": "SIRT3",
@@ -2526,10 +3312,34 @@
       "score": 0.8
     },
     {
+      "source": "SIRT3",
+      "target": "tau aggregation",
+      "relation": "loss increases aggregation",
+      "score": 0.88
+    },
+    {
+      "source": "SIRT5",
+      "target": "Autophagy",
+      "relation": "inhibits",
+      "score": 0.93
+    },
+    {
       "source": "SIRT5",
       "target": "LAMP1",
       "relation": "regulates",
       "score": 0.8
+    },
+    {
+      "source": "SIRT5",
+      "target": "tau aggregation",
+      "relation": "loss increases aggregation",
+      "score": 0.88
+    },
+    {
+      "source": "SMARCA2",
+      "target": "tau aggregation",
+      "relation": "loss increases aggregation",
+      "score": 0.88
     },
     {
       "source": "SOCS4",
@@ -2569,15 +3379,57 @@
     },
     {
       "source": "STK11",
+      "target": "NF-\u03baB pathway",
+      "relation": "regulates inflammatory signaling",
+      "score": 0.86
+    },
+    {
+      "source": "STK11",
       "target": "STRADA",
       "relation": "forms complex with",
       "score": 0.88
+    },
+    {
+      "source": "STK11",
+      "target": "tau aggregation",
+      "relation": "knockout increases aggregation; overexpression decreases aggregation",
+      "score": 0.95
     },
     {
       "source": "STRADA",
       "target": "MARK2",
       "relation": "associates with",
       "score": 0.8
+    },
+    {
+      "source": "STRADA",
+      "target": "tau aggregation",
+      "relation": "knockout increases aggregation",
+      "score": 0.95
+    },
+    {
+      "source": "Seahorse ATP Production Rate assay",
+      "target": "Canonical glycolysis",
+      "relation": "measures glycolysis",
+      "score": 0.9
+    },
+    {
+      "source": "Seahorse ATP Production Rate assay",
+      "target": "Oxidative phosphorylation",
+      "relation": "measures OXPHOS",
+      "score": 0.9
+    },
+    {
+      "source": "Seahorse Glycolytic Rate assay",
+      "target": "Canonical glycolysis",
+      "relation": "measures",
+      "score": 0.95
+    },
+    {
+      "source": "Seahorse Mito Stress Test",
+      "target": "Oxygen Consumption Rate (OCR)",
+      "relation": "measures",
+      "score": 0.95
     },
     {
       "source": "Synthetic tau fibrils",
@@ -2599,16 +3451,46 @@
       "score": 0.8
     },
     {
+      "source": "TLR4",
+      "target": "tau aggregation",
+      "relation": "CRISPR disruption reduces aggregation",
+      "score": 0.9
+    },
+    {
+      "source": "TMRE labeling",
+      "target": "Mitochondrial membrane potential",
+      "relation": "measures",
+      "score": 0.95
+    },
+    {
       "source": "TNFRSF1A",
       "target": "Tau Aggregation",
       "relation": "reduces",
       "score": 0.8
     },
     {
+      "source": "TNFRSF1A",
+      "target": "tau aggregation",
+      "relation": "CRISPR disruption reduces aggregation",
+      "score": 0.9
+    },
+    {
+      "source": "TNFRSF9",
+      "target": "tau aggregation",
+      "relation": "RNA-seq: aggregates induce expression",
+      "score": 0.9
+    },
+    {
       "source": "TRIM24",
       "target": "Mitochondrial Morphology",
       "relation": "disrupts",
       "score": 0.75
+    },
+    {
+      "source": "TRIM24",
+      "target": "Mitochondrial function",
+      "relation": "disruption reduces mitochondrial volume",
+      "score": 0.88
     },
     {
       "source": "TRIM28",
@@ -2797,6 +3679,12 @@
       "score": 0.8
     },
     {
+      "source": "VCAM1",
+      "target": "tau aggregation",
+      "relation": "CRISPR disruption reduces aggregation",
+      "score": 0.9
+    },
+    {
       "source": "VPS33A",
       "target": "Tau Protein",
       "relation": "increases",
@@ -2821,6 +3709,18 @@
       "score": 0.8
     },
     {
+      "source": "ZAP70",
+      "target": "tau aggregation",
+      "relation": "associated with NF-\u00ce\u00baB pathway reducing aggregation",
+      "score": 0.9
+    },
+    {
+      "source": "ZAP70",
+      "target": "tau aggregation",
+      "relation": "NF-\u00ce\u00baB associated; reduction decreases aggregation",
+      "score": 0.9
+    },
+    {
       "source": "gRNA MAPT-1",
       "target": "FACS sorted low tau population",
       "relation": "enriches",
@@ -2855,42 +3755,89 @@
       "target": "Tau Protein",
       "relation": "reduces levels",
       "score": 0.75
+    },
+    {
+      "source": "p62/SQSTM1",
+      "target": "Tau Protein",
+      "relation": "binds aggregated",
+      "score": 0.9
+    },
+    {
+      "source": "tau aggregation",
+      "target": "Lysosome homeostasis",
+      "relation": "aggregates alter lysosome dynamics",
+      "score": 0.9
     }
   ],
   "clusters": {
     "Tauopathy": [
+      "2N4R tau (P301L-EGFP)",
+      "Alzheimer's Disease",
       "BRSK1",
       "CAB39",
+      "Corticobasal Degeneration",
+      "EIF4G2",
+      "FTDP-17",
+      "FYN",
+      "Frontotemporal Dementia (FTD)",
       "GSK3A",
       "GSK3B",
+      "Inflammatory signaling",
+      "MAPT",
       "MARK1",
       "MARK2",
+      "METTL14",
+      "METTL3",
+      "MYT1",
+      "N-224 Tau Fragment",
+      "NCOA6",
+      "NF-\u03baB pathway",
+      "NSD1",
+      "Pick\u2019s Disease",
+      "Progressive Supranuclear Palsy",
       "SIK3",
       "STK11",
       "STRADA",
-      "Tau Protein"
-    ],
-    "Tauopathy - Additional": [
-      "Tau Aggregation"
+      "Synthetic tau fibrils",
+      "Tau 25kD Fragment",
+      "Tau Aggregation",
+      "Tau Oligomers",
+      "Tau Protein",
+      "Tau Seeding",
+      "p62/SQSTM1",
+      "tau aggregation"
     ],
     "Autophagy": [
+      "Autophagy",
+      "CTSD",
       "FIG4",
       "INPP1",
       "INPP5E",
       "LC3",
       "MTM1",
       "MTMR14",
+      "MTOR",
       "OCRL",
+      "PIK3C2B",
       "PIK3C3",
+      "PIK3CA",
+      "PIK3CD",
+      "PIK3CG",
       "PIK3R4",
       "PPM1E",
       "PRKAA1",
       "PRKACA",
+      "Phosphatidylinositol-3-phosphate biosynthetic process",
       "SACM1L",
       "SGK1",
+      "SIRT2",
+      "SIRT3",
+      "SIRT5",
       "SQSTM1",
       "TPTE",
-      "TPTE2"
+      "TPTE2",
+      "WIPI2",
+      "mTOR Signaling"
     ],
     "Ubiquitin/Proteasome": [
       "ARIH2",
@@ -2899,20 +3846,20 @@
       "CUL5",
       "ELOB",
       "ELOC",
+      "FBXO11",
+      "FBXW7",
       "RNF7",
       "SOCS4",
-      "SOCS5",
-      "Ubiquitin/Proteasome System"
+      "SOCS5"
     ],
     "UFMylation": [
       "UBA5",
       "UFC1",
       "UFL1",
-      "UFM1",
-      "UFMylation"
+      "UFM1"
     ],
     "Neddylation": [
-      "Neddylation",
+      "SENP8",
       "UBE2F"
     ],
     "Proteasome Activation": [
@@ -2935,8 +3882,19 @@
       "TCA Cycle"
     ],
     "Lysosomal Function": [
-      "Lysosomes",
       "PSAP"
+    ],
+    "Protease": [
+      "Calpain"
+    ],
+    "Protein Clearance": [
+      "Autophagy",
+      "Ubiquitin/Proteasome System"
+    ],
+    "Protein Modification": [
+      "GPI-anchor Biosynthesis",
+      "Neddylation",
+      "UFMylation"
     ],
     "Gene Expression": [
       "RNA Degradation",
@@ -2945,17 +3903,8 @@
     "Metabolic Regulation": [
       "AMPK Signaling"
     ],
-    "Protein Modification": [
-      "GPI-anchor Biosynthesis",
-      "Neddylation",
-      "UFMylation"
-    ],
     "Immune Regulation": [
       "Neuro-immune Axis"
-    ],
-    "Protein Clearance": [
-      "Autophagy",
-      "Ubiquitin/Proteasome System"
     ],
     "mTOR Pathway": [
       "RHEB",
@@ -2967,13 +3916,8 @@
       "BRD2",
       "CREBBP",
       "Chromatin Modification",
-      "EIF4G2",
-      "FBXW7",
       "KDM6A",
       "KMT2D",
-      "MYT1",
-      "NCOA6",
-      "NSD1",
       "TRIM28"
     ],
     "RNA metabolism": [
@@ -2991,8 +3935,15 @@
       "UBE2H",
       "UBE4B"
     ],
+    "Inflammatory Signaling": [
+      "Inflammatory signaling",
+      "NF-\u03baB pathway"
+    ],
     "CRISPR": [
-      "Multiplexed gRNAs"
+      "Cas9",
+      "Multiplexed gRNAs",
+      "gRNA MAPT-1",
+      "gRNA MAPT-2"
     ],
     "Screening": [
       "384-well arrayed CRISPR screen",
@@ -3005,19 +3956,14 @@
       "Golgi",
       "Lysosomes"
     ],
-    "Inflammatory Signaling": [
-      "Inflammatory signaling",
-      "NF-\u03baB pathway"
-    ],
     "Cell Line": [
-      "Cas9",
       "FACS sorted low tau population",
       "PC1",
       "SC2",
-      "SH-SY5Y cell line",
-      "SP70 antibody",
-      "gRNA MAPT-1",
-      "gRNA MAPT-2"
+      "SH-SY5Y cell line"
+    ],
+    "Antibody": [
+      "SP70 antibody"
     ],
     "Lysosome": [
       "LAMP1",
@@ -3160,6 +4106,102 @@
     "Aging Pathways": [
       "Cellular Aging",
       "Proteostasis"
+    ],
+    "Lysosome homeostasis": [
+      "FIG4",
+      "INPP5E",
+      "LAMP1",
+      "Lysosome homeostasis",
+      "MTMR14"
+    ],
+    "Mitochondrial": [
+      "DGKQ",
+      "ING1",
+      "MFN1",
+      "MFN2",
+      "Mitochondrial function",
+      "PPIP5K1",
+      "PPM1N",
+      "Respiratory function",
+      "TRIM24"
+    ],
+    "Inflammatory": [
+      "CARD11",
+      "CCL2",
+      "CCL27",
+      "CCL8",
+      "CD14",
+      "CD2",
+      "CD40",
+      "CD40LG",
+      "CDKN1A",
+      "CHUK",
+      "CSNK2A1",
+      "CSNK2B",
+      "EDA2R",
+      "FAS",
+      "IFI44",
+      "IGFBP3",
+      "IKBKB",
+      "IKBKG",
+      "IL17D",
+      "IL32",
+      "IRAK2",
+      "LYN",
+      "RIPK1",
+      "TLR4",
+      "TNFRSF1A",
+      "TNFRSF9",
+      "VCAM1",
+      "ZAP70"
+    ],
+    "Other signaling": [
+      "ARAF",
+      "CDK9",
+      "FMR1",
+      "FXR2",
+      "HDAC4",
+      "KDM7A",
+      "LTK",
+      "MAP3K7CL",
+      "MAP3K9",
+      "MTA3",
+      "PFKFB4",
+      "PGK1",
+      "PHF11",
+      "PKLR",
+      "SETDB2",
+      "SMARCA2"
+    ],
+    "Mitochondrial Morphology & Bioenergetics": [
+      "Canonical glycolysis",
+      "Complex I biogenesis",
+      "DGKQ",
+      "Elongated mitochondria",
+      "Fragmented mitochondria",
+      "IMPA1",
+      "ING1",
+      "MFN1",
+      "MFN2",
+      "Mitochondrial fatty acid beta-oxidation",
+      "Mitochondrial function",
+      "Mitochondrial membrane potential",
+      "Mitochondrial morphology",
+      "Mitochondrial translation",
+      "Mitochondrial transport",
+      "OCRL",
+      "Oxidative phosphorylation",
+      "Oxygen Consumption Rate (OCR)",
+      "PPIP5K1",
+      "PPM1N",
+      "Respiratory electron transport chain",
+      "Respiratory function",
+      "Seahorse ATP Production Rate assay",
+      "Seahorse Glycolytic Rate assay",
+      "Seahorse Mito Stress Test",
+      "TCA cycle",
+      "TMRE labeling",
+      "TRIM24"
     ]
   }
 }
