@@ -21,7 +21,7 @@ except ImportError:
     node2vec = None
     gensim = None
 
-class AdvancedAnalyzer:
+class NetworkAdvancedExtensions:
     def __init__(self, G):
         """
         Advanced network analysis extensions
@@ -545,24 +545,24 @@ class AdvancedAnalyzer:
     def network_entropy_analysis(self):
         """
         Compute network entropy and complexity metrics
-        
-        Returns:
-            dict: Network entropy and complexity analysis
         """
         # Degree distribution entropy
         degrees = [d for n, d in self.G.degree()]
         degree_dist = np.array(degrees) / sum(degrees)
         degree_entropy = -np.sum(degree_dist * np.log2(degree_dist + 1e-10))
-        
+    
         # Clustering coefficient analysis
-        clustering_coeffs = list(nx.clustering(self.G).values())
-        clustering_entropy = -np.sum(
-            clustering_coeffs * np.log2(clustering_coeffs + 1e-10)
-        )
+        clustering_coeffs = np.array(list(nx.clustering(self.G).values()))
+        if len(clustering_coeffs) > 0:
+            clustering_entropy = -np.sum(
+                clustering_coeffs * np.log2(clustering_coeffs + 1e-10)
+            )
+        else:
+            clustering_entropy = 0
         
         # Centrality entropy
         centrality_methods = {
-            'Degree': dict(self.G.degree()),
+            'Degree': nx.degree_centrality(self.G),
             'Betweenness': nx.betweenness_centrality(self.G),
             'Closeness': nx.closeness_centrality(self.G),
             'Eigenvector': nx.eigenvector_centrality(self.G)
@@ -570,8 +570,8 @@ class AdvancedAnalyzer:
         
         centrality_entropies = {}
         for method, centrality in centrality_methods.items():
-            values = list(centrality.values())
-            dist = np.array(values) / sum(values)
+            values = np.array(list(centrality.values()))
+            dist = values / np.sum(values)
             centrality_entropies[method] = -np.sum(dist * np.log2(dist + 1e-10))
         
         # Visualization of entropy distributions
