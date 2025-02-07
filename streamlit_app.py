@@ -736,10 +736,10 @@ def main():
                     # st.plotly_chart(cluster_results['visualizations']['interactive_cluster_dropdown'])
                     st.plotly_chart(cluster_results['visualizations']['dropdown'])
                     # Display heatmap
-                    st.plotly_chart(cluster_results['visualizations']['interaction_heatmap'])
+                    st.plotly_chart(cluster_results['visualizations']['heatmap'])
                     
                     # Display cluster composition
-                    st.plotly_chart(cluster_results['visualizations']['cluster_composition'])
+                    st.plotly_chart(cluster_results['visualizations']['composition'])
                     
                     # Show detailed metrics
                     if st.checkbox("Show Detailed Cluster Metrics"):
