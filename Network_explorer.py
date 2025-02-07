@@ -212,9 +212,14 @@ class NetworkExplorer:
                     clusters[cluster_v]['connections'][cluster_u] += 1
 
             # Prepare results structure
+            
             results = {
                 'cluster_details': {},
-                'visualizations': {},
+                'visualizations': {
+                    'cluster_connections': fig_dropdown,  # Changed from 'interactive_cluster_dropdown'
+                    'interaction_heatmap': fig_heatmap,
+                    'cluster_composition': fig_composition
+                },
                 'metadata': {
                     'total_clusters': len(clusters),
                     'analysis_timestamp': datetime.now(),
@@ -356,6 +361,7 @@ class NetworkExplorer:
         except Exception as e:
             self.logger.error(f"Cluster interaction analysis failed: {str(e)}")
             raise RuntimeError(f"Analysis failed: {str(e)}")
+        
     def get_network_entropy(self) -> Dict:
         """
         Calculate network entropy metrics
