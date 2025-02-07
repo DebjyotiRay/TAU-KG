@@ -733,8 +733,8 @@ def main():
                     cluster_results = analyzer.get_cluster_interactions()
                     
                     # Display interactive dropdown visualization
-                    st.plotly_chart(cluster_results['visualizations']['interactive_cluster_dropdown'])
-                    
+                    # st.plotly_chart(cluster_results['visualizations']['interactive_cluster_dropdown'])
+                    st.plotly_chart(cluster_results['visualizations']['dropdown'])
                     # Display heatmap
                     st.plotly_chart(cluster_results['visualizations']['interaction_heatmap'])
                     
