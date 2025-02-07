@@ -21,7 +21,7 @@ except ImportError:
     node2vec = None
     gensim = None
 
-class NetworkAdvancedExtensions:
+class AdvancedAnalyzer:
     def __init__(self, G):
         """
         Advanced network analysis extensions
