@@ -121,8 +121,8 @@ class NetworkExplorer:
             dict: Detailed cluster interaction metrics and visualizations
         """
         # Check cache first
-        if self._cluster_interaction_cache:
-            return self._cluster_interaction_cache
+        # if self._cluster_interaction_cache:
+        #     return self._cluster_interaction_cache
         
         # Extract cluster information
         clusters = {}
