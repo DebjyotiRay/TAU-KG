@@ -112,157 +112,250 @@ class NetworkExplorer:
             
         age = datetime.now() - cache_entry['timestamp']
         return age.total_seconds() / 3600 < max_age_hours
-
-    def cluster_interaction_analysis(self):
+    
+    def _validate_and_get_cache(self, cache_key: str, params: dict = None) -> Optional[Dict]:
         """
-        Comprehensive analysis of interactions between clusters
+        Validate and retrieve cached data
+        
+        Args:
+            cache_key: Key to check in cache
+            params: Optional parameters to validate against cached parameters
+            
+        Returns:
+            Optional[Dict]: Cached data if valid, None otherwise
+        """
+        cache_entry = self._cache.get(cache_key)
+        if not cache_entry or not cache_entry['data']:
+            return None
+            
+        # Check if cache is too old (more than 1 hour)
+        if cache_entry['timestamp']:
+            age = datetime.now() - cache_entry['timestamp']
+            if age.total_seconds() > 3600:  # 1 hour
+                return None
+        
+        # If parameters are provided, validate them against cached parameters
+        if params and cache_entry['params'] != params:
+            return None
+            
+        return cache_entry['data']
+        
+    def _update_cache(self, cache_key: str, data: Dict, params: dict = None):
+        """
+        Update cache with new data
+        
+        Args:
+            cache_key: Key in cache to update
+            data: Data to store in cache
+            params: Optional parameters associated with the data
+        """
+        self._cache[cache_key] = {
+            'data': data,
+            'timestamp': datetime.now(),
+            'params': params
+        }
+
+    def cluster_interaction_analysis(self) -> Dict:
+        """
+        Analyze interactions between clusters with enhanced error handling and caching
         
         Returns:
             dict: Detailed cluster interaction metrics and visualizations
+            
+        Raises:
+            RuntimeError: If analysis fails
         """
-        # Check cache first
-        # if self._cluster_interaction_cache:
-        #     return self._cluster_interaction_cache
-        
-        # Extract cluster information
-        clusters = {}
-        for node, data in self.G.nodes(data=True):
-            cluster = data.get('cluster', 'Unknown')
-            if cluster not in clusters:
-                clusters[cluster] = {
-                    'nodes': [],
-                    'node_types': Counter(),
-                    'connections': defaultdict(int),
-                    'total_nodes': 0  # Initialize total_nodes counter
-                }
-            clusters[cluster]['nodes'].append(node)
-            clusters[cluster]['node_types'][data.get('type', 'Unknown')] += 1
-            clusters[cluster]['total_nodes'] += 1  # Increment total_nodes counter
-        
-        # Analyze inter-cluster connections
-        for u, v, data in self.G.edges(data=True):
-            cluster_u = self.G.nodes[u].get('cluster', 'Unknown')
-            cluster_v = self.G.nodes[v].get('cluster', 'Unknown')
-            
-            if cluster_u != cluster_v:
-                # Track inter-cluster connections
-                clusters[cluster_u]['connections'][cluster_v] += 1
-                clusters[cluster_v]['connections'][cluster_u] += 1
-        
-        # Prepare results
-        results = {
-            'cluster_details': {},
-            'visualizations': {}
-        }
-        
-        # Cluster-level metrics
-        for cluster, info in clusters.items():
-            results['cluster_details'][cluster] = {
-                'total_nodes': info['total_nodes'],
-                'node_types': dict(info['node_types']),
-                'inter_cluster_connections': dict(info['connections'])
+        try:
+            # Define analysis parameters for cache validation
+            analysis_params = {
+                'node_count': self.G.number_of_nodes(),
+                'edge_count': self.G.number_of_edges(),
+                'cluster_count': len(self.clusters)
             }
-        
-        # Visualization: Cluster Interaction Heatmap
-        cluster_names = list(clusters.keys())
-        interaction_matrix = np.zeros((len(cluster_names), len(cluster_names)))
-        
-        for i, cluster1 in enumerate(cluster_names):
-            for j, cluster2 in enumerate(cluster_names):
-                if cluster1 != cluster2:
-                    interaction_matrix[i, j] = clusters[cluster1]['connections'].get(cluster2, 0)
-        
-        # Plotly Heatmap
-        fig_heatmap = go.Figure(data=go.Heatmap(
-            z=interaction_matrix,
-            x=cluster_names,
-            y=cluster_names,
-            colorscale='Viridis'
-        ))
-        fig_heatmap.update_layout(
-            title='Inter-Cluster Interaction Heatmap',
-            xaxis_title='Target Cluster',
-            yaxis_title='Source Cluster',
-            height=600,
-            width=800
-        )
-        results['visualizations']['cluster_interaction_heatmap'] = fig_heatmap
-        
-        # Visualization: Cluster Node Type Distribution
-        fig_node_types = go.Figure()
-        for cluster, info in clusters.items():
-            fig_node_types.add_trace(go.Bar(
-                x=list(info['node_types'].keys()),
-                y=list(info['node_types'].values()),
-                name=cluster
-            ))
-        
-        fig_node_types.update_layout(
-            title='Node Type Distribution Across Clusters',
-            xaxis_title='Node Type',
-            yaxis_title='Count',
-            barmode='group',
-            height=600,
-            width=800
-        )
-        results['visualizations']['node_type_distribution'] = fig_node_types
-        
-        # Create interactive dropdown visualization
-        fig_dropdown = go.Figure()
-        
-        # Prepare data for each cluster
-        for cluster in clusters:
-            # Get connections for this cluster
-            connections = clusters[cluster]['connections']
             
-            # Add trace for this cluster (initially invisible)
-            fig_dropdown.add_trace(
-                go.Bar(
-                    x=list(connections.keys()),
-                    y=list(connections.values()),
-                    name=cluster,
-                    visible=(cluster == cluster_names[0])  # Only first cluster visible by default
-                )
-            )
-        
-        # Create dropdown menu
-        dropdown_buttons = []
-        for i, cluster in enumerate(cluster_names):
-            visibility = [False] * len(cluster_names)
-            visibility[i] = True
+            # Check cache with parameters
+            cached_results = self._validate_and_get_cache('cluster_interaction', analysis_params)
+            if cached_results is not None:
+                self.logger.info("Using cached cluster interaction analysis results")
+                return cached_results
+
+            # Extract cluster information with validation
+            clusters = defaultdict(lambda: {
+                'nodes': [],
+                'node_types': Counter(),
+                'connections': defaultdict(int),
+                'internal_edges': 0,
+                'external_edges': 0,
+                'total_nodes': 0  # Initialize counter
+            })
             
-            dropdown_buttons.append(
-                dict(
-                    method='update',
+            # Process nodes with validation
+            for node, data in self.G.nodes(data=True):
+                cluster = data.get('cluster', 'Unknown')
+                node_type = data.get('type', 'Unknown')
+                
+                clusters[cluster]['nodes'].append(node)
+                clusters[cluster]['node_types'][node_type] += 1
+                clusters[cluster]['total_nodes'] += 1  # Increment counter
+
+            # Process edges with validation
+            for u, v, data in self.G.edges(data=True):
+                cluster_u = self.G.nodes[u].get('cluster', 'Unknown')
+                cluster_v = self.G.nodes[v].get('cluster', 'Unknown')
+                
+                if cluster_u == cluster_v:
+                    clusters[cluster_u]['internal_edges'] += 1
+                else:
+                    clusters[cluster_u]['external_edges'] += 1
+                    clusters[cluster_v]['external_edges'] += 1
+                    clusters[cluster_u]['connections'][cluster_v] += 1
+                    clusters[cluster_v]['connections'][cluster_u] += 1
+
+            # Prepare results structure
+            results = {
+                'cluster_details': {},
+                'visualizations': {},
+                'metadata': {
+                    'total_clusters': len(clusters),
+                    'analysis_timestamp': datetime.now(),
+                    'parameters': analysis_params
+                }
+            }
+
+            # Calculate metrics for each cluster
+            for cluster, info in clusters.items():
+                total_edges = info['internal_edges'] + info['external_edges']
+                modularity = (info['internal_edges'] / total_edges 
+                            if total_edges > 0 else 0)
+                
+                results['cluster_details'][cluster] = {
+                    'total_nodes': info['total_nodes'],
+                    'node_types': dict(info['node_types']),
+                    'inter_cluster_connections': dict(info['connections']),
+                    'internal_edges': info['internal_edges'],
+                    'external_edges': info['external_edges'],
+                    'modularity': modularity,
+                    'isolation_index': (info['internal_edges'] / 
+                                      (info['internal_edges'] + info['external_edges'] + 1e-10))
+                }
+
+            # Create interactive cluster dropdown visualization
+            cluster_names = list(clusters.keys())
+            fig_dropdown = go.Figure()
+
+            for cluster in cluster_names:
+                connections = clusters[cluster]['connections']
+                if connections:  # Only add if there are connections
+                    fig_dropdown.add_trace(
+                        go.Bar(
+                            x=list(connections.keys()),
+                            y=list(connections.values()),
+                            name=cluster,
+                            visible=(cluster == cluster_names[0])
+                        )
+                    )
+
+            # Create dropdown menu
+            buttons = []
+            for i, cluster in enumerate(cluster_names):
+                visibility = [False] * len(cluster_names)
+                visibility[i] = True
+                buttons.append(dict(
                     label=cluster,
-                    args=[{'visible': visibility},
-                        {'title': f'Inter-Cluster Connections for {cluster}'}]
-                )
+                    method='update',
+                    args=[
+                        {'visible': visibility},
+                        {'title': f'Connections from {cluster} to Other Clusters'}
+                    ]
+                ))
+
+            fig_dropdown.update_layout(
+                updatemenus=[{
+                    'buttons': buttons,
+                    'direction': 'down',
+                    'showactive': True,
+                    'x': 0.1,
+                    'y': 1.15,
+                    'xanchor': 'left',
+                    'yanchor': 'top'
+                }],
+                title=f'Connections from {cluster_names[0]} to Other Clusters',
+                xaxis_title='Target Cluster',
+                yaxis_title='Number of Connections',
+                height=500,
+                width=800
             )
-        
-        # Update layout with dropdown
-        fig_dropdown.update_layout(
-            updatemenus=[{
-                'buttons': dropdown_buttons,
-                'direction': 'down',
-                'showactive': True,
-                'x': 0.5,
-                'xanchor': 'center',
-                'y': 1.15,
-                'yanchor': 'top'
-            }],
-            title=f'Inter-Cluster Connections for {cluster_names[0]}',
-            xaxis_title='Target Cluster',
-            yaxis_title='Connection Count',
-            height=600,
-            width=800
-        )
-        results['visualizations']['interactive_dropdown'] = fig_dropdown
-        
-        # Cache and return results
-        self._cluster_interaction_cache = results
-        return results        
-      
+            
+            results['visualizations']['interactive_cluster_dropdown'] = fig_dropdown
+
+            # Create interaction heatmap
+            interaction_matrix = np.zeros((len(cluster_names), len(cluster_names)))
+            for i, cluster1 in enumerate(cluster_names):
+                for j, cluster2 in enumerate(cluster_names):
+                    if cluster1 != cluster2:
+                        interaction_matrix[i, j] = clusters[cluster1]['connections'].get(cluster2, 0)
+
+            fig_heatmap = go.Figure(data=go.Heatmap(
+                z=interaction_matrix,
+                x=cluster_names,
+                y=cluster_names,
+                colorscale='Viridis',
+                hoverongaps=False
+            ))
+
+            fig_heatmap.update_layout(
+                title='Inter-Cluster Interaction Heatmap',
+                xaxis_title='Target Cluster',
+                yaxis_title='Source Cluster',
+                height=600,
+                width=800
+            )
+            
+            results['visualizations']['interaction_heatmap'] = fig_heatmap
+
+            # Create cluster composition visualization
+            df_composition = pd.DataFrame([
+                {
+                    'Cluster': cluster,
+                    'NodeType': node_type,
+                    'Count': count
+                }
+                for cluster, info in clusters.items()
+                for node_type, count in info['node_types'].items()
+            ])
+
+            fig_composition = px.bar(
+                df_composition,
+                x='Cluster',
+                y='Count',
+                color='NodeType',
+                title='Node Type Composition by Cluster',
+                barmode='group'
+            )
+
+            fig_composition.update_layout(height=500, width=800)
+            results['visualizations']['cluster_composition'] = fig_composition
+
+            # Create cluster metrics visualization
+            metrics_df = pd.DataFrame([
+                {
+                    'Cluster': cluster,
+                    'Nodes': results['cluster_details'][cluster]['total_nodes'],
+                    'Internal Edges': info['internal_edges'],
+                    'External Edges': info['external_edges'],
+                    'Modularity': results['cluster_details'][cluster]['modularity']
+                }
+                for cluster, info in clusters.items()
+            ])
+
+            # Update cache with new results
+            self._update_cache('cluster_interaction', results, analysis_params)
+            
+            return results
+            
+        except Exception as e:
+            self.logger.error(f"Cluster interaction analysis failed: {str(e)}")
+            raise RuntimeError(f"Analysis failed: {str(e)}")
     def get_network_entropy(self) -> Dict:
         """
         Calculate network entropy metrics
