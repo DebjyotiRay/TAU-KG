@@ -88,9 +88,30 @@ class NetworkAnalyzer:
     def get_cluster_interactions(self):
         return self.network_explorer.cluster_interaction_analysis()
 
-    def get_paper_distribution(self):
-        return self.network_explorer.paper_distribution_analysis()
+    # def get_paper_distribution(self):
+    #     return self.network_explorer.paper_distribution_analysis()
+    # In Network_stats.py, modify the PMID handling in get_paper_distribution method:
 
+    def get_paper_distribution(self):
+        """Get paper distribution analysis"""
+        # Convert PMIDs to strings for comparison
+        unique_pmids = sorted(set(str(node.get('PMID', 'Unknown')) 
+                                 for node in self.nodes_data))
+        paper_stats = {}
+        
+        for pmid in unique_pmids:
+            nodes = [node for node in self.nodes_data 
+                    if str(node.get('PMID', 'Unknown')) == pmid]
+            edges = [edge for edge in self.edges_data 
+                    if str(self.G.nodes[edge['source']].get('PMID', 'Unknown')) == pmid]
+            
+            paper_stats[pmid] = {
+                'nodes': len(nodes),
+                'edges': len(edges),
+                'node_types': Counter(node['type'] for node in nodes)
+            }
+        
+        return paper_stats
     def get_filtered_network(self, node_types=None, min_degree=1, min_weight=0.0):
         return self.network_explorer.get_filtered_view(node_types, min_degree, min_weight)
 
