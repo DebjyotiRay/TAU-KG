@@ -9,8 +9,8 @@ from plotly.subplots import make_subplots
 from scipy.stats import pearsonr
 
 from Network_explorer import *
-from Advanced_analyzer import *
-from Basic_analyzer import *
+from advanced_analyzer import *
+from basic_analyzer import *
 class NetworkAnalyzer:
     def __init__(self, nodes_data, edges_data):
         """Initialize NetworkAnalyzer with nodes and edges data"""
@@ -84,7 +84,21 @@ class NetworkAnalyzer:
     def get_filtered_view(self, node_types=None, min_degree=1, min_weight=0.0):
         """Get filtered view of the network"""
         return self.network_explorer.get_filtered_view(node_types, min_degree, min_weight)
+    # Network Explorer Methods
+    def get_cluster_interactions(self):
+        return self.network_explorer.cluster_interaction_analysis()
 
+    def get_paper_distribution(self):
+        return self.network_explorer.paper_distribution_analysis()
+
+    def get_filtered_network(self, node_types=None, min_degree=1, min_weight=0.0):
+        return self.network_explorer.get_filtered_view(node_types, min_degree, min_weight)
+
+    def explore_node_details(self, node_id):
+        return self.network_explorer.explore_node(node_id)
+
+    def get_network_overview(self):
+        return self.network_explorer.get_network_summary()
     # Streamlit Display Methods
     def display_stats_streamlit(self, selected_cluster=None):
         """Display comprehensive network statistics in Streamlit"""
@@ -340,3 +354,47 @@ class NetworkAnalyzer:
         type_df = pd.DataFrame(list(type_counts.items()),
                              columns=["Type", "Count"])
         st.bar_chart(type_df.set_index("Type"))
+        
+    def validate_graph_data(self):
+        """
+        Comprehensive graph data validation
+        
+        Returns:
+            dict: Validation results with potential warnings and errors
+        """
+        validation_results = {
+            "is_valid": True,
+            "warnings": [],
+            "errors": []
+        }
+        
+        # Check node attributes
+        required_node_attrs = ["id", "type", "cluster", "size"]
+        for node in self.nodes_data:
+            missing_attrs = [attr for attr in required_node_attrs if attr not in node]
+            if missing_attrs:
+                validation_results["warnings"].append(
+                    f"Node {node.get('id', 'Unknown')} missing attributes: {missing_attrs}"
+                )
+        
+        # Check edge validity
+        node_ids = {node["id"] for node in self.nodes_data}
+        invalid_edges = [
+            edge for edge in self.edges_data 
+            if edge["source"] not in node_ids or edge["target"] not in node_ids
+        ]
+        
+        if invalid_edges:
+            validation_results["warnings"].append(
+                f"Found {len(invalid_edges)} edges with invalid node references"
+            )
+        
+        # Check for isolated components
+        connected_components = list(nx.connected_components(self.G))
+        if len(connected_components) > 1:
+            validation_results["warnings"].append(
+                f"Network has {len(connected_components)} disconnected components"
+            )
+        
+        validation_results["is_valid"] = not bool(validation_results["errors"])
+        return validation_results
