@@ -10,6 +10,7 @@ import numpy as np
 from collections import Counter, defaultdict
 import streamlit as st
 from itertools import combinations
+import matplotlib
 
 from scipy.stats import pearsonr
 import plotly.graph_objects as go
@@ -714,136 +715,410 @@ def main():
                     for viz_name, viz in entropy_results['visualizations'].items():
                         st.plotly_chart(viz)
 
+            # with explorer_tab:
+            #     st.header("Network Explorer")
+                
+            #     # Sidebar for controls
+            #     st.sidebar.header("Explorer Controls")
+                
+            #     # Analysis type selection
+            #     analysis_type = st.sidebar.radio(
+            #         "Select Analysis Type",
+            #         ["Cluster Interactions", "Paper Distribution", "Node Exploration", "Network Overview"]
+            #     )
+
+            #     if analysis_type == "Cluster Interactions":
+            #         st.subheader("Cluster Interaction Analysis")
+                    
+            #         # Get cluster analysis results
+            #         cluster_results = analyzer.get_cluster_interactions()
+                    
+            #         # Display interactive dropdown visualization
+            #         # st.plotly_chart(cluster_results['visualizations']['interactive_cluster_dropdown'])
+            #         st.plotly_chart(cluster_results['visualizations']['dropdown'])
+            #         # Display heatmap
+            #         st.plotly_chart(cluster_results['visualizations']['interaction_heatmap'])
+                    
+            #         # Display cluster composition
+            #         st.plotly_chart(cluster_results['visualizations']['cluster_composition'])
+                    
+            #         # Show detailed metrics
+            #         if st.checkbox("Show Detailed Cluster Metrics"):
+            #             for cluster, details in cluster_results['cluster_details'].items():
+            #                 with st.expander(f"Cluster: {cluster}"):
+            #                     cols = st.columns(3)
+            #                     with cols[0]:
+            #                         st.metric("Total Nodes", details['total_nodes'])
+            #                     with cols[1]:
+            #                         st.metric("Internal Edges", details.get('internal_edges', 0))
+            #                     with cols[2]:
+            #                         st.metric("External Edges", details.get('external_edges', 0))
+                                
+            #                     st.write("Node Type Distribution")
+            #                     st.bar_chart(details['node_types'])
+
+            #     elif analysis_type == "Paper Distribution":
+            #         st.subheader("Paper Distribution Analysis")
+                    
+            #         # Get paper distribution results
+            #         paper_results = analyzer.get_paper_distribution()
+                    
+            #         # Display summary metrics
+            #         summary = paper_results['summary']
+            #         cols = st.columns(4)
+            #         with cols[0]:
+            #             st.metric("Total Papers", summary['total_papers'])
+            #         with cols[1]:
+            #             st.metric("Avg Nodes/Paper", f"{summary['avg_nodes_per_paper']:.2f}")
+            #         with cols[2]:
+            #             st.metric("Avg Edges/Paper", f"{summary['avg_edges_per_paper']:.2f}")
+            #         with cols[3]:
+            #             st.metric("Max Nodes in Paper", summary['max_nodes_paper'])
+                    
+            #         # Display main visualization
+            #         st.plotly_chart(paper_results['visualizations']['main_overview'])
+                    
+            #         # Show paper details
+            #         if st.checkbox("Show Paper Details"):
+            #             selected_paper = st.selectbox(
+            #                 "Select Paper",
+            #                 options=[p['PMID'] for p in paper_results['paper_details']]
+            #             )
+                        
+            #             paper_data = next(p for p in paper_results['paper_details'] 
+            #                             if p['PMID'] == selected_paper)
+            #             st.write(paper_data)
+
+            #     elif analysis_type == "Node Exploration":
+            #         st.subheader("Node Explorer")
+                    
+            #         # Node selection
+            #         selected_node = st.selectbox(
+            #             "Select Node to Explore",
+            #             options=sorted(analyzer.node_ids)
+            #         )
+                    
+            #         if selected_node:
+            #             # Get node exploration results
+            #             node_results = analyzer.explore_node_details(selected_node)
+                        
+            #             # Display node network
+            #             st.plotly_chart(node_results['visualizations']['network'])
+                        
+            #             # Display node metrics
+            #             metrics = node_results['metrics']
+            #             cols = st.columns(4)
+            #             with cols[0]:
+            #                 st.metric("Degree", metrics['degree'])
+            #             with cols[1]:
+            #                 st.metric("Betweenness", f"{metrics['betweenness_centrality']:.3f}")
+            #             with cols[2]:
+            #                 st.metric("Closeness", f"{metrics['closeness_centrality']:.3f}")
+            #             with cols[3]:
+            #                 st.metric("Clustering", f"{metrics['clustering_coefficient']:.3f}")
+                        
+            #             # Display distributions
+            #             st.plotly_chart(node_results['visualizations']['distributions'])
+
+            #     else:  # Network Overview
+            #         st.subheader("Network Overview")
+                    
+            #         # Get network overview
+            #         overview_results = analyzer.get_network_overview()
+                    
+            #         # Display basic metrics
+            #         metrics = overview_results['metrics']
+            #         cols = st.columns(4)
+            #         with cols[0]:
+            #             st.metric("Total Nodes", metrics['total_nodes'])
+            #             st.metric("Density", f"{metrics['density']:.3f}")
+            #         with cols[1]:
+            #             st.metric("Total Edges", metrics['total_edges'])
+            #             st.metric("Avg Clustering", f"{metrics['avg_clustering']:.3f}")
+        
+            #         with cols[2]:
+            #             st.metric("Avg Degree", f"{metrics['avg_degree']:.2f}")
+            #         with cols[3]:
+            #             st.metric("Components", metrics['number_components'])
+                    
+            #         # Display main visualizations
+            #         st.plotly_chart(overview_results['visualizations']['main_overview'])
+            #         st.plotly_chart(overview_results['visualizations']['centrality_correlation'])
             with explorer_tab:
-                st.header("Network Explorer")
+                st.header("Scientific Literature Network Explorer")
                 
-                # Sidebar for controls
-                st.sidebar.header("Explorer Controls")
-                
-                # Analysis type selection
+                # Sidebar for Analysis Controls
+                st.sidebar.header("Network Exploration Options")
                 analysis_type = st.sidebar.radio(
                     "Select Analysis Type",
-                    ["Cluster Interactions", "Paper Distribution", "Node Exploration", "Network Overview"]
+                    [
+                        "Publication Network Overview",
+                        "PMID-Based Network Exploration", 
+                        "Research Cluster Analysis",
+                        "Temporal Research Dynamics",
+                        "Publication Relationship Mapping",
+                        "Node Exploration",
+                        "Filtered Network View",
+                        "Network Entropy Analysis"
+                    ]
                 )
 
-                if analysis_type == "Cluster Interactions":
-                    st.subheader("Cluster Interaction Analysis")
-                    
-                    # Get cluster analysis results
-                    cluster_results = analyzer.get_cluster_interactions()
-                    
-                    # Display interactive dropdown visualization
-                    # st.plotly_chart(cluster_results['visualizations']['interactive_cluster_dropdown'])
-                    st.plotly_chart(cluster_results['visualizations']['dropdown'])
-                    # Display heatmap
-                    st.plotly_chart(cluster_results['visualizations']['heatmap'])
-                    
-                    # Display cluster composition
-                    st.plotly_chart(cluster_results['visualizations']['composition'])
-                    
-                    # Show detailed metrics
-                    if st.checkbox("Show Detailed Cluster Metrics"):
-                        for cluster, details in cluster_results['cluster_details'].items():
-                            with st.expander(f"Cluster: {cluster}"):
-                                cols = st.columns(3)
-                                with cols[0]:
-                                    st.metric("Total Nodes", details['total_nodes'])
-                                with cols[1]:
-                                    st.metric("Internal Edges", details.get('internal_edges', 0))
-                                with cols[2]:
-                                    st.metric("External Edges", details.get('external_edges', 0))
-                                
-                                st.write("Node Type Distribution")
-                                st.bar_chart(details['node_types'])
+                # Comprehensive Error Handling Wrapper
+                def safe_analysis(analysis_function, error_message):
+                    try:
+                        return analysis_function()
+                    except Exception as e:
+                        st.error(f"{error_message}: {e}")
+                        st.exception(e)
+                        return None
 
-                elif analysis_type == "Paper Distribution":
-                    st.subheader("Paper Distribution Analysis")
+                # Publication Network Overview
+                if analysis_type == "Publication Network Overview":
+                    st.subheader("Scientific Publication Network Insights")
                     
-                    # Get paper distribution results
-                    paper_results = analyzer.get_paper_distribution()
+                    paper_results = safe_analysis(
+                        analyzer.get_paper_distribution,
+                        "Error in Paper Distribution Analysis"
+                    )
                     
-                    # Display summary metrics
-                    summary = paper_results['summary']
-                    cols = st.columns(4)
-                    with cols[0]:
-                        st.metric("Total Papers", summary['total_papers'])
-                    with cols[1]:
-                        st.metric("Avg Nodes/Paper", f"{summary['avg_nodes_per_paper']:.2f}")
-                    with cols[2]:
-                        st.metric("Avg Edges/Paper", f"{summary['avg_edges_per_paper']:.2f}")
-                    with cols[3]:
-                        st.metric("Max Nodes in Paper", summary['max_nodes_paper'])
-                    
-                    # Display main visualization
-                    st.plotly_chart(paper_results['visualizations']['main_overview'])
-                    
-                    # Show paper details
-                    if st.checkbox("Show Paper Details"):
-                        selected_paper = st.selectbox(
-                            "Select Paper",
-                            options=[p['PMID'] for p in paper_results['paper_details']]
-                        )
+                    if paper_results:
+                        # Comprehensive Publication Metrics
+                        cols = st.columns(4)
+                        with cols[0]:
+                            st.metric("Total Unique Papers", paper_results['summary']['total_papers'])
+                            st.metric("Avg Nodes/Paper", f"{paper_results['summary']['avg_nodes_per_paper']:.2f}")
+                        with cols[1]:
+                            st.metric("Total Network Nodes", 
+                                    sum(paper['Nodes'] for paper in paper_results['paper_details']))
+                            st.metric("Avg Edges/Paper", f"{paper_results['summary']['avg_edges_per_paper']:.2f}")
+                        with cols[2]:
+                            st.metric("Publication Diversity", 
+                                    f"{len(set(paper['PMID'] for paper in paper_results['paper_details']))}")
+                            st.metric("Network Complexity", f"{paper_results['summary']['avg_density']:.4f}")
+                        with cols[3]:
+                            st.metric("Research Domains", 
+                                    f"{len(set(type for paper in paper_results['paper_details'] for type in paper['Node_Types']))}")
+                            st.metric("Avg Paper Connectivity", f"{paper_results['summary'].get('avg_paper_connectivity', 0):.2f}")
                         
-                        paper_data = next(p for p in paper_results['paper_details'] 
-                                        if p['PMID'] == selected_paper)
-                        st.write(paper_data)
+                        # Advanced Visualizations
+                        st.plotly_chart(paper_results['visualizations']['main_overview'])
 
-                elif analysis_type == "Node Exploration":
-                    st.subheader("Node Explorer")
+                # PMID-Based Network Exploration
+                elif analysis_type == "PMID-Based Network Exploration":
+                    st.subheader("Research Paper Network Exploration")
                     
-                    # Node selection
+                    # PMID Selection
+                    unique_pmids = sorted(set(node.get('PMID', 'Unknown') for node in nodes_data if node.get('PMID') != 'Unknown'))
+                    selected_pmid = st.selectbox(
+                        "Select Research Paper (PMID)", 
+                        options=unique_pmids
+                    )
+                    
+                    if selected_pmid:
+                        # Detailed PMID Analysis
+                        pmid_nodes = [node for node in nodes_data if node.get('PMID') == selected_pmid]
+                        pmid_edges = [
+                            edge for edge in edges_data 
+                            if edge['source'] in [n['id'] for n in pmid_nodes] and 
+                            edge['target'] in [n['id'] for n in pmid_nodes]
+                        ]
+                        
+                        cols = st.columns(3)
+                        with cols[0]:
+                            st.metric("Nodes in Paper", len(pmid_nodes))
+                            st.metric("Node Types", len(set(node['type'] for node in pmid_nodes)))
+                        with cols[1]:
+                            st.metric("Edges in Paper Network", len(pmid_edges))
+                            st.metric("Average Edge Weight", 
+                                    f"{sum(edge['score'] for edge in pmid_edges)/len(pmid_edges):.2f}" if pmid_edges else "N/A")
+                        with cols[2]:
+                            st.metric("Clusters Represented", 
+                                    len(set(node.get('cluster', 'Unknown') for node in pmid_nodes)))
+                            st.metric("Network Density", 
+                                    f"{len(pmid_edges)/(len(pmid_nodes)*(len(pmid_nodes)-1)/2):.4f}")
+                        
+                        # Node Type Distribution
+                        type_distribution = Counter(node['type'] for node in pmid_nodes)
+                        st.subheader("Node Type Distribution")
+                        st.bar_chart(type_distribution)
+
+                # Temporal Research Dynamics
+                elif analysis_type == "Temporal Research Dynamics":
+                    st.subheader("Research Evolution and Dynamics")
+                    
+                    temporal_results = safe_analysis(
+                        analyzer.get_temporal_analysis, 
+                        "Error in Temporal Analysis"
+                    )
+                    
+                    if temporal_results:
+                        # Comprehensive Temporal Metrics
+                        cols = st.columns(4)
+                        with cols[0]:
+                            st.metric("Research Papers Timeline", 
+                                    f"{temporal_results['summary']['total_pmids']} Publications")
+                        with cols[1]:
+                            st.metric("Network Growth", 
+                                    f"{temporal_results['trend_analysis']['node_growth_rate']:.4f}")
+                        with cols[2]:
+                            st.metric("Connectivity Evolution", 
+                                    f"{temporal_results['trend_analysis']['edge_growth_rate']:.4f}")
+                        with cols[3]:
+                            st.metric("Network Complexity Trend", 
+                                    f"{temporal_results['trend_analysis']['density_trend']:.4f}")
+                        
+                        # Temporal Evolution Visualization
+                        st.plotly_chart(temporal_results['visualizations']['temporal_evolution'])
+
+                # Research Cluster Analysis
+                elif analysis_type == "Research Cluster Analysis":
+                    st.subheader("Research Cluster Interaction Analysis")
+                    
+                    cluster_results = safe_analysis(
+                        analyzer.get_cluster_interactions,
+                        "Error in Cluster Interactions Analysis"
+                    )
+                    
+                    if cluster_results:
+                        # Cluster Interaction Visualizations
+                        cols = st.columns(2)
+                        with cols[0]:
+                            st.plotly_chart(cluster_results['visualizations']['dropdown'])
+                        with cols[1]:
+                            st.plotly_chart(cluster_results['visualizations']['heatmap'])
+                        
+                        # Cluster Composition
+                        st.plotly_chart(cluster_results['visualizations']['composition'])
+
+                # Publication Relationship Mapping
+                elif analysis_type == "Publication Relationship Mapping":
+                    st.subheader("Publication Relationship Network")
+                    
+                    # Advanced filtering and exploration
+                    min_connections = st.slider(
+                        "Minimum Connections", 
+                        min_value=1, 
+                        max_value=10, 
+                        value=2
+                    )
+                    
+                    min_weight = st.slider(
+                        "Minimum Connection Weight", 
+                        min_value=0.0, 
+                        max_value=1.0, 
+                        value=0.5,
+                        step=0.1
+                    )
+                    
+                    # Implement relationship mapping logic here
+                    # This would involve filtering edges based on connection strength
+                    filtered_edges = [
+                        edge for edge in edges_data 
+                        if edge['score'] >= min_weight
+                    ]
+                    
+                    st.metric("Publications with Strong Connections", len(filtered_edges))
+
+                # Node Exploration
+                elif analysis_type == "Node Exploration":
+                    st.subheader("Detailed Node Analysis")
+                    
+                    # Node Selection
                     selected_node = st.selectbox(
-                        "Select Node to Explore",
-                        options=sorted(analyzer.node_ids)
+                        "Select Node to Explore", 
+                        options=sorted(list(analyzer.node_ids))
                     )
                     
                     if selected_node:
-                        # Get node exploration results
-                        node_results = analyzer.explore_node_details(selected_node)
+                        node_results = safe_analysis(
+                            lambda: analyzer.explore_node_details(selected_node),
+                            f"Error exploring node {selected_node}"
+                        )
                         
-                        # Display node network
-                        st.plotly_chart(node_results['visualizations']['network'])
-                        
-                        # Display node metrics
-                        metrics = node_results['metrics']
-                        cols = st.columns(4)
+                        if node_results:
+                            # Network Visualization
+                            st.plotly_chart(node_results['visualizations']['network'])
+                            
+                            # Node Metrics
+                            cols = st.columns(4)
+                            with cols[0]:
+                                st.metric("Degree", node_results['metrics']['degree'])
+                            with cols[1]:
+                                st.metric("Betweenness", f"{node_results['metrics']['betweenness_centrality']:.4f}")
+                            with cols[2]:
+                                st.metric("Closeness", f"{node_results['metrics']['closeness_centrality']:.4f}")
+                            with cols[3]:
+                                st.metric("Clustering", f"{node_results['metrics']['clustering_coefficient']:.4f}")
+                            
+                            # Neighborhood Analysis
+                            st.plotly_chart(node_results['visualizations']['distributions'])
+
+                # Filtered Network View
+                elif analysis_type == "Filtered Network View":
+                    st.subheader("Network Filtering")
+                    
+                    # Filtering Controls
+                    node_types = st.multiselect(
+                        "Filter by Node Types", 
+                        options=sorted(set(node['type'] for node in nodes_data))
+                    )
+
+                    min_degree = st.slider(
+                        "Minimum Node Degree", 
+                        min_value=1, 
+                        max_value=max(dict(analyzer.G.degree()).values()),
+                        value=1
+                    )
+
+                    min_weight = st.slider(
+                        "Minimum Edge Weight", 
+                        min_value=0.0, 
+                        max_value=max(d.get('weight', 0) for u, v, d in analyzer.G.edges(data=True)),
+                        value=0.0,
+                        step=0.1
+                    )
+
+                    # Apply Filtering
+                    filtered_results = safe_analysis(
+                        lambda: analyzer.get_filtered_view(
+                            node_types=node_types, 
+                            min_degree=min_degree, 
+                            min_weight=min_weight
+                        ),
+                        "Error in Network Filtering"
+                    )
+                    
+                    if filtered_results:
+                        # Filtered Network Statistics
+                        cols = st.columns(3)
                         with cols[0]:
-                            st.metric("Degree", metrics['degree'])
+                            st.metric("Filtered Nodes", filtered_results['metrics']['nodes'])
                         with cols[1]:
-                            st.metric("Betweenness", f"{metrics['betweenness_centrality']:.3f}")
+                            st.metric("Filtered Edges", filtered_results['metrics']['edges'])
                         with cols[2]:
-                            st.metric("Closeness", f"{metrics['closeness_centrality']:.3f}")
-                        with cols[3]:
-                            st.metric("Clustering", f"{metrics['clustering_coefficient']:.3f}")
-                        
-                        # Display distributions
-                        st.plotly_chart(node_results['visualizations']['distributions'])
+                            st.metric("Network Density", f"{filtered_results['metrics']['density']:.4f}")
 
-                else:  # Network Overview
-                    st.subheader("Network Overview")
-                    
-                    # Get network overview
-                    overview_results = analyzer.get_network_overview()
-                    
-                    # Display basic metrics
-                    metrics = overview_results['metrics']
-                    cols = st.columns(4)
-                    with cols[0]:
-                        st.metric("Total Nodes", metrics['total_nodes'])
-                        st.metric("Density", f"{metrics['density']:.3f}")
-                    with cols[1]:
-                        st.metric("Total Edges", metrics['total_edges'])
-                        st.metric("Avg Clustering", f"{metrics['avg_clustering']:.3f}")
-        
-                    with cols[2]:
-                        st.metric("Avg Degree", f"{metrics['avg_degree']:.2f}")
-                    with cols[3]:
-                        st.metric("Components", metrics['number_components'])
-                    
-                    # Display main visualizations
-                    st.plotly_chart(overview_results['visualizations']['main_overview'])
-                    st.plotly_chart(overview_results['visualizations']['centrality_correlation'])
+                        # Visualization
+                        st.plotly_chart(filtered_results['visualization'])
 
+                # Network Entropy Analysis
+                elif analysis_type == "Network Entropy Analysis":
+                    st.subheader("Network Entropy Analysis")
+                    
+                    entropy_results = safe_analysis(
+                        analyzer.get_network_entropy,
+                        "Error in Network Entropy Analysis"
+                    )
+                    
+                    if entropy_results:
+                        # Entropy Metrics
+                        cols = st.columns(3)
+                        with cols[0]:
+                            st.metric("Degree Entropy", f"{entropy_results['entropy_measures']['degree_entropy']:.4f}")
+                        with cols[1]:
+                            st.metric("Type Entropy", f"{entropy_results['entropy_measures']['type_entropy']:.4f}")
+                        with cols[2]:
+                            st.metric("Cluster Entropy", f"{entropy_results['entropy_measures']['cluster_entropy']:.4f}")
     except Exception as e:
         st.error(f"Application error: {str(e)}")
         st.error("Please refresh the page or contact support if the issue persists.")
