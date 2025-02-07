@@ -186,7 +186,7 @@ class NetworkExplorer:
                 'connections': defaultdict(int),
                 'internal_edges': 0,
                 'external_edges': 0,
-                'total_nodes': 0  # Initialize counter
+                'total_nodes': 0
             })
             
             # Process nodes with validation
@@ -196,7 +196,7 @@ class NetworkExplorer:
                 
                 clusters[cluster]['nodes'].append(node)
                 clusters[cluster]['node_types'][node_type] += 1
-                clusters[cluster]['total_nodes'] += 1  # Increment counter
+                clusters[cluster]['total_nodes'] += 1
 
             # Process edges with validation
             for u, v, data in self.G.edges(data=True):
@@ -211,29 +211,14 @@ class NetworkExplorer:
                     clusters[cluster_u]['connections'][cluster_v] += 1
                     clusters[cluster_v]['connections'][cluster_u] += 1
 
-            # Prepare results structure
-            
-            results = {
-                'cluster_details': {},
-                'visualizations': {
-                    'cluster_connections': fig_dropdown,  # Changed from 'interactive_cluster_dropdown'
-                    'interaction_heatmap': fig_heatmap,
-                    'cluster_composition': fig_composition
-                },
-                'metadata': {
-                    'total_clusters': len(clusters),
-                    'analysis_timestamp': datetime.now(),
-                    'parameters': analysis_params
-                }
-            }
-
             # Calculate metrics for each cluster
+            cluster_details = {}
             for cluster, info in clusters.items():
                 total_edges = info['internal_edges'] + info['external_edges']
                 modularity = (info['internal_edges'] / total_edges 
                             if total_edges > 0 else 0)
                 
-                results['cluster_details'][cluster] = {
+                cluster_details[cluster] = {
                     'total_nodes': info['total_nodes'],
                     'node_types': dict(info['node_types']),
                     'inter_cluster_connections': dict(info['connections']),
@@ -241,17 +226,19 @@ class NetworkExplorer:
                     'external_edges': info['external_edges'],
                     'modularity': modularity,
                     'isolation_index': (info['internal_edges'] / 
-                                      (info['internal_edges'] + info['external_edges'] + 1e-10))
+                                    (info['internal_edges'] + info['external_edges'] + 1e-10))
                 }
 
-            # Create interactive cluster dropdown visualization
+            # Create visualizations
             cluster_names = list(clusters.keys())
-            fig_dropdown = go.Figure()
+
+            # 1. Create interactive cluster dropdown visualization
+            dropdown_fig = go.Figure()
 
             for cluster in cluster_names:
                 connections = clusters[cluster]['connections']
                 if connections:  # Only add if there are connections
-                    fig_dropdown.add_trace(
+                    dropdown_fig.add_trace(
                         go.Bar(
                             x=list(connections.keys()),
                             y=list(connections.values()),
@@ -274,7 +261,7 @@ class NetworkExplorer:
                     ]
                 ))
 
-            fig_dropdown.update_layout(
+            dropdown_fig.update_layout(
                 updatemenus=[{
                     'buttons': buttons,
                     'direction': 'down',
@@ -290,17 +277,15 @@ class NetworkExplorer:
                 height=500,
                 width=800
             )
-            
-            results['visualizations']['interactive_cluster_dropdown'] = fig_dropdown
 
-            # Create interaction heatmap
+            # 2. Create interaction heatmap
             interaction_matrix = np.zeros((len(cluster_names), len(cluster_names)))
             for i, cluster1 in enumerate(cluster_names):
                 for j, cluster2 in enumerate(cluster_names):
                     if cluster1 != cluster2:
                         interaction_matrix[i, j] = clusters[cluster1]['connections'].get(cluster2, 0)
 
-            fig_heatmap = go.Figure(data=go.Heatmap(
+            heatmap_fig = go.Figure(data=go.Heatmap(
                 z=interaction_matrix,
                 x=cluster_names,
                 y=cluster_names,
@@ -308,17 +293,15 @@ class NetworkExplorer:
                 hoverongaps=False
             ))
 
-            fig_heatmap.update_layout(
+            heatmap_fig.update_layout(
                 title='Inter-Cluster Interaction Heatmap',
                 xaxis_title='Target Cluster',
                 yaxis_title='Source Cluster',
                 height=600,
                 width=800
             )
-            
-            results['visualizations']['interaction_heatmap'] = fig_heatmap
 
-            # Create cluster composition visualization
+            # 3. Create cluster composition visualization
             df_composition = pd.DataFrame([
                 {
                     'Cluster': cluster,
@@ -329,7 +312,7 @@ class NetworkExplorer:
                 for node_type, count in info['node_types'].items()
             ])
 
-            fig_composition = px.bar(
+            composition_fig = px.bar(
                 df_composition,
                 x='Cluster',
                 y='Count',
@@ -338,20 +321,22 @@ class NetworkExplorer:
                 barmode='group'
             )
 
-            fig_composition.update_layout(height=500, width=800)
-            results['visualizations']['cluster_composition'] = fig_composition
+            composition_fig.update_layout(height=500, width=800)
 
-            # Create cluster metrics visualization
-            metrics_df = pd.DataFrame([
-                {
-                    'Cluster': cluster,
-                    'Nodes': results['cluster_details'][cluster]['total_nodes'],
-                    'Internal Edges': info['internal_edges'],
-                    'External Edges': info['external_edges'],
-                    'Modularity': results['cluster_details'][cluster]['modularity']
+            # Compile results
+            results = {
+                'cluster_details': cluster_details,
+                'visualizations': {
+                    'dropdown': dropdown_fig,
+                    'heatmap': heatmap_fig,
+                    'composition': composition_fig
+                },
+                'metadata': {
+                    'total_clusters': len(clusters),
+                    'analysis_timestamp': datetime.now(),
+                    'parameters': analysis_params
                 }
-                for cluster, info in clusters.items()
-            ])
+            }
 
             # Update cache with new results
             self._update_cache('cluster_interaction', results, analysis_params)
