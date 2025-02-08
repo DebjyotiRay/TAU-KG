@@ -182,15 +182,8 @@ class AdvancedAnalyzer:
         except Exception as e:
             self.logger.error(f"Network embedding failed: {e}")
             return self._fallback_embedding(dimensions)
-    # Add this method to the AdvancedAnalyzer class in advanced_analyzer.py
-
     def get_temporal_analysis(self):
-        """
-        Perform temporal analysis of network evolution
-        
-        Returns:
-            dict: Temporal analysis results with visualizations
-        """
+        """Perform temporal analysis of network evolution"""
         try:
             # Group nodes by PMID
             pmid_groups = defaultdict(list)
@@ -210,59 +203,92 @@ class AdvancedAnalyzer:
                     'avg_degree': sum(dict(subgraph.degree()).values()) / len(subgraph) if len(subgraph) > 0 else 0
                 }
                 temporal_metrics.append(metrics)
+            
+            return temporal_metrics
                 
-            # Create visualizations
-            df = pd.DataFrame(temporal_metrics)
-            df = df.sort_values('PMID')
-            
-            fig = make_subplots(rows=2, cols=2,
-                               subplot_titles=('Nodes Over Time',
-                                             'Edges Over Time',
-                                             'Network Density',
-                                             'Average Degree'))
-            
-            # Add traces
-            fig.add_trace(
-                go.Scatter(x=df['PMID'], y=df['nodes'],
-                          mode='lines+markers', name='Nodes'),
-                row=1, col=1
-            )
-            
-            fig.add_trace(
-                go.Scatter(x=df['PMID'], y=df['edges'],
-                          mode='lines+markers', name='Edges'),
-                row=1, col=2
-            )
-            
-            fig.add_trace(
-                go.Scatter(x=df['PMID'], y=df['density'],
-                          mode='lines+markers', name='Density'),
-                row=2, col=1
-            )
-            
-            fig.add_trace(
-                go.Scatter(x=df['PMID'], y=df['avg_degree'],
-                          mode='lines+markers', name='Avg Degree'),
-                row=2, col=2
-            )
-            
-            fig.update_layout(height=800, showlegend=True,
-                             title_text='Network Evolution Over Time')
-            
-            return {
-                'metrics': temporal_metrics,
-                'visualization': fig,
-                'summary': {
-                    'total_timepoints': len(df),
-                    'avg_nodes': df['nodes'].mean(),
-                    'avg_edges': df['edges'].mean(),
-                    'avg_density': df['density'].mean()
-                }
-            }
-            
         except Exception as e:
             self.logger.error(f"Temporal analysis failed: {str(e)}")
             raise RuntimeError(f"Analysis failed: {str(e)}")
+    
+    # def get_temporal_analysis(self):
+    #     """
+    #     Perform temporal analysis of network evolution
+        
+    #     Returns:
+    #         dict: Temporal analysis results with visualizations
+    #     """
+    #     try:
+    #         # Group nodes by PMID
+    #         pmid_groups = defaultdict(list)
+    #         for node, data in self.G.nodes(data=True):
+    #             pmid = str(data.get('PMID', 'Unknown'))
+    #             pmid_groups[pmid].append(node)
+                
+    #         # Calculate metrics over time
+    #         temporal_metrics = []
+    #         for pmid, nodes in pmid_groups.items():
+    #             subgraph = self.G.subgraph(nodes)
+    #             metrics = {
+    #                 'PMID': pmid,
+    #                 'nodes': len(subgraph),
+    #                 'edges': subgraph.number_of_edges(),
+    #                 'density': nx.density(subgraph),
+    #                 'avg_degree': sum(dict(subgraph.degree()).values()) / len(subgraph) if len(subgraph) > 0 else 0
+    #             }
+    #             temporal_metrics.append(metrics)
+                
+    #         # Create visualizations
+    #         df = pd.DataFrame(temporal_metrics)
+    #         df = df.sort_values('PMID')
+            
+    #         fig = make_subplots(rows=2, cols=2,
+    #                            subplot_titles=('Nodes Over Time',
+    #                                          'Edges Over Time',
+    #                                          'Network Density',
+    #                                          'Average Degree'))
+            
+    #         # Add traces
+    #         fig.add_trace(
+    #             go.Scatter(x=df['PMID'], y=df['nodes'],
+    #                       mode='lines+markers', name='Nodes'),
+    #             row=1, col=1
+    #         )
+            
+    #         fig.add_trace(
+    #             go.Scatter(x=df['PMID'], y=df['edges'],
+    #                       mode='lines+markers', name='Edges'),
+    #             row=1, col=2
+    #         )
+            
+    #         fig.add_trace(
+    #             go.Scatter(x=df['PMID'], y=df['density'],
+    #                       mode='lines+markers', name='Density'),
+    #             row=2, col=1
+    #         )
+            
+    #         fig.add_trace(
+    #             go.Scatter(x=df['PMID'], y=df['avg_degree'],
+    #                       mode='lines+markers', name='Avg Degree'),
+    #             row=2, col=2
+    #         )
+            
+    #         fig.update_layout(height=800, showlegend=True,
+    #                          title_text='Network Evolution Over Time')
+            
+    #         return {
+    #             'metrics': temporal_metrics,
+    #             'visualization': fig,
+    #             'summary': {
+    #                 'total_timepoints': len(df),
+    #                 'avg_nodes': df['nodes'].mean(),
+    #                 'avg_edges': df['edges'].mean(),
+    #                 'avg_density': df['density'].mean()
+    #             }
+    #         }
+            
+    #     except Exception as e:
+    #         self.logger.error(f"Temporal analysis failed: {str(e)}")
+    #         raise RuntimeError(f"Analysis failed: {str(e)}")
     def _fallback_embedding(self, dimensions=2):
         """
         Fallback embedding method using basic networkx metrics
