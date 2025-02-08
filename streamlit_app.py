@@ -782,11 +782,12 @@ def main():
                         st.exception(e)
                         return None
 
-                # Publication Network Overview
+                
+
                 # Publication Network Overview
                 if analysis_type == "Publication Network Overview":
                     st.subheader("Publication Distribution")
-                    pmid_stats = self.get_pmid_distribution()
+                    pmid_stats = get_pmid_distribution()
                     pmid_df = pd.DataFrame([
                         {"PMID": pmid, "Node Count": data["count"]}
                         for pmid, data in pmid_stats.items()
