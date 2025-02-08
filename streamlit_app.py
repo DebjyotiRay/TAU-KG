@@ -999,7 +999,7 @@ def main():
                             
                         strong_connections = []
                         for pmid1, pmid2 in combinations(publication_groups.keys(), 2):
-                            similarity = calculate_publication_similarity(
+                            similarity = analyzer.calculate_publication_similarity(
                                 publication_groups[pmid1],
                                 publication_groups[pmid2],
                                 min_shared=min_connections,
@@ -1029,7 +1029,7 @@ def main():
                         
                         # Create publication network visualization
                         if strong_connections:
-                            fig = create_publication_network_plot(strong_connections, publication_groups)
+                            fig = analyzer.create_publication_network_plot(strong_connections, publication_groups)
                             st.plotly_chart(fig, use_container_width=True)
                             
                             # Add interaction details
@@ -1044,76 +1044,7 @@ def main():
                             st.warning("No strong connections found with current filter settings")
                 
                 # Add these helper functions:
-                def calculate_publication_similarity(pub1_nodes, pub2_nodes, min_shared=1, min_weight=0.3):
-                    """Calculate similarity between two publications based on shared entities"""
-                    shared_types = set(n1['type'] for n1 in pub1_nodes) & set(n2['type'] for n2 in pub2_nodes)
-                    if not shared_types:
-                        return 0.0
-                        
-                    similarity_score = 0
-                    for entity_type in shared_types:
-                        pub1_entities = set(n['id'] for n in pub1_nodes if n['type'] == entity_type)
-                        pub2_entities = set(n['id'] for n in pub2_nodes if n['type'] == entity_type)
-                        shared_entities = pub1_entities & pub2_entities
-                        if len(shared_entities) >= min_shared:
-                            similarity_score += len(shared_entities) / max(len(pub1_entities), len(pub2_entities))
-                            
-                    return similarity_score / len(shared_types)
                 
-                def create_publication_network_plot(connections, publication_groups):
-                    """Create an interactive network visualization of publication relationships"""
-                    # Create nodes
-                    nodes = list(set(pmid for conn in connections for pmid in conn[:2]))
-                    node_sizes = [len(publication_groups[pmid]) for pmid in nodes]
-                    
-                    # Create the network plot using plotly
-                    fig = go.Figure()
-                    
-                    # Add edges (connections)
-                    edge_x, edge_y = [], []
-                    edge_colors = []
-                    for source, target, weight in connections:
-                        source_idx = nodes.index(source)
-                        target_idx = nodes.index(target)
-                        edge_x.extend([source_idx, target_idx, None])
-                        edge_y.extend([0, 0, None])
-                        edge_colors.extend([weight, weight, weight])
-                    
-                    fig.add_trace(go.Scatter(
-                        x=edge_x, y=edge_y,
-                        line=dict(width=1, color=edge_colors),
-                        hoverinfo='none',
-                        mode='lines',
-                        showlegend=False
-                    ))
-                    
-                    # Add nodes
-                    fig.add_trace(go.Scatter(
-                        x=list(range(len(nodes))),
-                        y=[0] * len(nodes),
-                        mode='markers+text',
-                        marker=dict(
-                            size=[s * 10 for s in node_sizes],
-                            color='lightblue',
-                            line=dict(width=2)
-                        ),
-                        text=nodes,
-                        hovertext=[f"PMID: {pmid}<br>Entities: {len(publication_groups[pmid])}" 
-                                  for pmid in nodes],
-                        textposition="top center"
-                    ))
-                    
-                    fig.update_layout(
-                        title="Publication Relationship Network",
-                        showlegend=False,
-                        hovermode='closest',
-                        margin=dict(b=20,l=5,r=5,t=40),
-                        xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
-                        yaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
-                        height=600
-                    )
-                    
-                    return fig
                 # Node Exploration
                 elif analysis_type == "Node Exploration":
                     st.subheader("Detailed Node Analysis")
