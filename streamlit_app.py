@@ -940,15 +940,16 @@ def main():
                                 st.write("#### Node Type Distribution")
                                 st.bar_chart(details['node_types'])
                                 
-                                
                                 # Inter-cluster Connections
                                 st.write("#### Connections to Other Clusters")
                                 connections_df = pd.DataFrame([
-                                    {"Target Cluster": target_cluster, "Connections": count}  # Changed 'Connection Count' to 'Connections'
+                                    {"Target Cluster": target_cluster, "Number of Connections": count}  # Changed column name
                                     for target_cluster, count in details['inter_cluster_connections'].items()
-                                ]).sort_values("Connections", ascending=False)  # Changed sort column name to match
+                                ]).sort_values("Number of Connections", ascending=False)  # Sort by new column name
+                                
+                                # Display the sorted dataframe
                                 st.dataframe(connections_df)
-                        
+                                                        
                         # Analysis Timestamp
                         st.caption(f"Analysis performed at: {cluster_results['metadata']['analysis_timestamp'].strftime('%Y-%m-%d %H:%M:%S')}")
 
