@@ -885,6 +885,20 @@ def main():
                         "Error in Cluster Interactions Analysis"
                     )
                     
+                    interactions = analyzer.get_cluster_interactions()
+                    if interactions:
+                        interaction_data = []
+                        for (cluster1, cluster2), data in interactions.items():
+                            interaction_data.append({
+                                "Cluster Pair": f"{cluster1} ↔ {cluster2}",
+                                "Interaction Count": data["count"],
+                                "Average Score": sum(edge["score"] for edge in data["edges"]) / len(data["edges"])
+                            })
+                        
+                        interaction_df = pd.DataFrame(interaction_data)
+                        st.write("Cross-cluster Interactions:")
+                        st.dataframe(interaction_df)
+
                     if cluster_results:
                         # Cluster Interaction Visualizations
                         cols = st.columns(2)
