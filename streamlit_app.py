@@ -18,7 +18,7 @@ from plotly.subplots import make_subplots
 from Network_stats import *
 # Set page config must be the first Streamlit command
 st.set_page_config(layout="wide", page_title="Biomedical Knowledge Graph")
-
+st.title("Biomedical Knowledge Graph Visualization")
 # Load data from JSON file
 def load_data(file_path="data_unique.json"):
     try:
@@ -568,12 +568,12 @@ def main():
                         file_name="network_statistics.json",
                         mime="application/json"
                     )
-
+        
         # Main content area
         main_tab, stats_tab = st.tabs(["Network Visualization", "Detailed Analysis"])
 
         with main_tab:
-            st.title("Biomedical Knowledge Graph Visualization")
+            
             
             # Create and display network
             # with st.spinner("Loading network visualization..."):
@@ -763,7 +763,7 @@ def main():
                     "Select Analysis Type",
                     [
                         "Publication Network Overview",
-                        "PMID-Based Network Exploration", 
+                        
                         "Research Cluster Analysis",
                         "Temporal Research Dynamics",
                         "Publication Relationship Mapping",
@@ -795,9 +795,6 @@ def main():
                     
                     st.write("Nodes per Publication:")
                     st.bar_chart(data=pmid_df.set_index("PMID")["Node Count"])
-                # PMID-Based Network Exploration
-                elif analysis_type == "PMID-Based Network Exploration":
-                    st.subheader("Research Paper Network Exploration")
                     pmid_counts = defaultdict(int)
                     for node in nodes_data:
                         pmid = str(node.get('PMID', 'Unknown'))
@@ -817,28 +814,10 @@ def main():
                         st.metric("Average Nodes per Paper", f"{df['Number of Nodes'].mean():.1f}")
                     with col3:
                         st.metric("Max Nodes in Paper", df['Number of Nodes'].max())
-                    
-                    # Create distribution plot
-                    fig = go.Figure()
-                    fig.add_trace(go.Bar(
-                        x=df['PMID'],
-                        y=df['Number of Nodes'],
-                        name='Nodes per Paper'
-                    ))
-                    
-                    fig.update_layout(
-                        title='Distribution of Nodes Across Papers',
-                        xaxis_title='Paper PMID',
-                        yaxis_title='Number of Nodes',
-                        height=500,
-                        showlegend=False
-                    )
-                    
-                    st.plotly_chart(fig)
-                    
-                    # Option to show raw data
+
                     if st.checkbox("Show Raw Data"):
                         st.dataframe(df)
+                
                     
 
                 # Temporal Research Dynamics
