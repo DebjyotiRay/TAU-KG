@@ -906,8 +906,48 @@ def main():
                 # PMID-Based Network Exploration
                 elif analysis_type == "PMID-Based Network Exploration":
                     st.subheader("Research Paper Network Exploration")
+                    pmid_counts = defaultdict(int)
+                    for node in nodes_data:
+                        pmid = str(node.get('PMID', 'Unknown'))
+                        pmid_counts[pmid] += 1
                     
-                    display_paper_analysis_tab()
+                    # Convert to DataFrame and sort
+                    df = pd.DataFrame(
+                        [(pmid, count) for pmid, count in pmid_counts.items()],
+                        columns=['PMID', 'Number of Nodes']
+                    ).sort_values('Number of Nodes', ascending=False)
+                    
+                    # Display metrics
+                    col1, col2, col3 = st.columns(3)
+                    with col1:
+                        st.metric("Total Papers", len(pmid_counts))
+                    with col2:
+                        st.metric("Average Nodes per Paper", f"{df['Number of Nodes'].mean():.1f}")
+                    with col3:
+                        st.metric("Max Nodes in Paper", df['Number of Nodes'].max())
+                    
+                    # Create distribution plot
+                    fig = go.Figure()
+                    fig.add_trace(go.Bar(
+                        x=df['PMID'],
+                        y=df['Number of Nodes'],
+                        name='Nodes per Paper'
+                    ))
+                    
+                    fig.update_layout(
+                        title='Distribution of Nodes Across Papers',
+                        xaxis_title='Paper PMID',
+                        yaxis_title='Number of Nodes',
+                        height=500,
+                        showlegend=False
+                    )
+                    
+                    st.plotly_chart(fig)
+                    
+                    # Option to show raw data
+                    if st.checkbox("Show Raw Data"):
+                        st.dataframe(df)
+                    
 
                 # Temporal Research Dynamics
                 elif analysis_type == "Temporal Research Dynamics":
