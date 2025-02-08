@@ -753,135 +753,7 @@ def main():
                     for viz_name, viz in entropy_results['visualizations'].items():
                         st.plotly_chart(viz)
 
-            # with explorer_tab:
-            #     st.header("Network Explorer")
-                
-            #     # Sidebar for controls
-            #     st.sidebar.header("Explorer Controls")
-                
-            #     # Analysis type selection
-            #     analysis_type = st.sidebar.radio(
-            #         "Select Analysis Type",
-            #         ["Cluster Interactions", "Paper Distribution", "Node Exploration", "Network Overview"]
-            #     )
-
-            #     if analysis_type == "Cluster Interactions":
-            #         st.subheader("Cluster Interaction Analysis")
-                    
-            #         # Get cluster analysis results
-            #         cluster_results = analyzer.get_cluster_interactions()
-                    
-            #         # Display interactive dropdown visualization
-            #         # st.plotly_chart(cluster_results['visualizations']['interactive_cluster_dropdown'])
-            #         st.plotly_chart(cluster_results['visualizations']['dropdown'])
-            #         # Display heatmap
-            #         st.plotly_chart(cluster_results['visualizations']['interaction_heatmap'])
-                    
-            #         # Display cluster composition
-            #         st.plotly_chart(cluster_results['visualizations']['cluster_composition'])
-                    
-            #         # Show detailed metrics
-            #         if st.checkbox("Show Detailed Cluster Metrics"):
-            #             for cluster, details in cluster_results['cluster_details'].items():
-            #                 with st.expander(f"Cluster: {cluster}"):
-            #                     cols = st.columns(3)
-            #                     with cols[0]:
-            #                         st.metric("Total Nodes", details['total_nodes'])
-            #                     with cols[1]:
-            #                         st.metric("Internal Edges", details.get('internal_edges', 0))
-            #                     with cols[2]:
-            #                         st.metric("External Edges", details.get('external_edges', 0))
-                                
-            #                     st.write("Node Type Distribution")
-            #                     st.bar_chart(details['node_types'])
-
-            #     elif analysis_type == "Paper Distribution":
-            #         st.subheader("Paper Distribution Analysis")
-                    
-            #         # Get paper distribution results
-            #         paper_results = analyzer.get_paper_distribution()
-                    
-            #         # Display summary metrics
-            #         summary = paper_results['summary']
-            #         cols = st.columns(4)
-            #         with cols[0]:
-            #             st.metric("Total Papers", summary['total_papers'])
-            #         with cols[1]:
-            #             st.metric("Avg Nodes/Paper", f"{summary['avg_nodes_per_paper']:.2f}")
-            #         with cols[2]:
-            #             st.metric("Avg Edges/Paper", f"{summary['avg_edges_per_paper']:.2f}")
-            #         with cols[3]:
-            #             st.metric("Max Nodes in Paper", summary['max_nodes_paper'])
-                    
-            #         # Display main visualization
-            #         st.plotly_chart(paper_results['visualizations']['main_overview'])
-                    
-            #         # Show paper details
-            #         if st.checkbox("Show Paper Details"):
-            #             selected_paper = st.selectbox(
-            #                 "Select Paper",
-            #                 options=[p['PMID'] for p in paper_results['paper_details']]
-            #             )
-                        
-            #             paper_data = next(p for p in paper_results['paper_details'] 
-            #                             if p['PMID'] == selected_paper)
-            #             st.write(paper_data)
-
-            #     elif analysis_type == "Node Exploration":
-            #         st.subheader("Node Explorer")
-                    
-            #         # Node selection
-            #         selected_node = st.selectbox(
-            #             "Select Node to Explore",
-            #             options=sorted(analyzer.node_ids)
-            #         )
-                    
-            #         if selected_node:
-            #             # Get node exploration results
-            #             node_results = analyzer.explore_node_details(selected_node)
-                        
-            #             # Display node network
-            #             st.plotly_chart(node_results['visualizations']['network'])
-                        
-            #             # Display node metrics
-            #             metrics = node_results['metrics']
-            #             cols = st.columns(4)
-            #             with cols[0]:
-            #                 st.metric("Degree", metrics['degree'])
-            #             with cols[1]:
-            #                 st.metric("Betweenness", f"{metrics['betweenness_centrality']:.3f}")
-            #             with cols[2]:
-            #                 st.metric("Closeness", f"{metrics['closeness_centrality']:.3f}")
-            #             with cols[3]:
-            #                 st.metric("Clustering", f"{metrics['clustering_coefficient']:.3f}")
-                        
-            #             # Display distributions
-            #             st.plotly_chart(node_results['visualizations']['distributions'])
-
-            #     else:  # Network Overview
-            #         st.subheader("Network Overview")
-                    
-            #         # Get network overview
-            #         overview_results = analyzer.get_network_overview()
-                    
-            #         # Display basic metrics
-            #         metrics = overview_results['metrics']
-            #         cols = st.columns(4)
-            #         with cols[0]:
-            #             st.metric("Total Nodes", metrics['total_nodes'])
-            #             st.metric("Density", f"{metrics['density']:.3f}")
-            #         with cols[1]:
-            #             st.metric("Total Edges", metrics['total_edges'])
-            #             st.metric("Avg Clustering", f"{metrics['avg_clustering']:.3f}")
-        
-            #         with cols[2]:
-            #             st.metric("Avg Degree", f"{metrics['avg_degree']:.2f}")
-            #         with cols[3]:
-            #             st.metric("Components", metrics['number_components'])
-                    
-            #         # Display main visualizations
-            #         st.plotly_chart(overview_results['visualizations']['main_overview'])
-            #         st.plotly_chart(overview_results['visualizations']['centrality_correlation'])
+            
             with explorer_tab:
                 st.header("Scientific Literature Network Explorer")
                 
@@ -913,45 +785,15 @@ def main():
                 # Publication Network Overview
                 # Publication Network Overview
                 if analysis_type == "Publication Network Overview":
-                    st.subheader("Scientific Publication Network Insights")
+                    st.subheader("Publication Distribution")
+                    pmid_stats = self.get_pmid_distribution()
+                    pmid_df = pd.DataFrame([
+                        {"PMID": pmid, "Node Count": data["count"]}
+                        for pmid, data in pmid_stats.items()
+                    ]).sort_values("Node Count", ascending=False)
                     
-                    # Count nodes per PMID
-                    pmid_counts = defaultdict(int)
-                    for node in nodes_data:
-                        pmid = str(node.get('PMID', 'Unknown'))
-                        pmid_counts[pmid] += 1
-                    
-                    # Create DataFrame for visualization
-                    df = pd.DataFrame(list(pmid_counts.items()), columns=['PMID', 'Nodes'])
-                    df = df.sort_values('Nodes', ascending=False)
-                    
-                    # Display metrics
-                    col1, col2, col3 = st.columns(3)
-                    with col1:
-                        st.metric("Total Papers", len(pmid_counts))
-                    with col2:
-                        st.metric("Average Nodes per Paper", f"{df['Nodes'].mean():.1f}")
-                    with col3:
-                        st.metric("Max Nodes in Paper", df['Nodes'].max())
-                    
-                    # Create distribution plot
-                    fig = go.Figure(data=[
-                        go.Bar(x=df['PMID'], y=df['Nodes'], name='Nodes per Paper')
-                    ])
-                    
-                    fig.update_layout(
-                        title='Distribution of Nodes Across Papers',
-                        xaxis_title='Paper PMID',
-                        yaxis_title='Number of Nodes',
-                        height=500,
-                        showlegend=False
-                    )
-                    
-                    st.plotly_chart(fig)
-                    
-                    if st.checkbox("Show Raw Data"):
-                        st.dataframe(df)
-
+                    st.write("Nodes per Publication:")
+                    st.bar_chart(data=pmid_df.set_index("PMID")["Node Count"])
                 # PMID-Based Network Exploration
                 elif analysis_type == "PMID-Based Network Exploration":
                     st.subheader("Research Paper Network Exploration")
