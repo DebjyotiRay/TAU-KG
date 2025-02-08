@@ -992,16 +992,49 @@ def main():
                             
                         strong_connections = []
                         for pmid1, pmid2 in combinations(publication_groups.keys(), 2):
-                            # Fix: Pass min_shared and min_weight as named arguments
                             similarity = analyzer.calculate_publication_similarity(
                                 publication_groups[pmid1],
                                 publication_groups[pmid2],
-                                min_shared=min_connections,  # Use named argument
-                                min_weight=min_weight        # Use named argument
+                                min_shared=min_connections,
+                                min_weight=min_weight
                             )
                             if similarity > min_weight:
                                 strong_connections.append((pmid1, pmid2, similarity))
-                
+                        
+                        # Display meaningful metrics
+                        metric_col1, metric_col2, metric_col3 = st.columns(3)
+                        with metric_col1:
+                            st.metric(
+                                "Connected Publications",
+                                len(set(pmid for conn in strong_connections for pmid in conn[:2]))
+                            )
+                        with metric_col2:
+                            st.metric(
+                                "Strong Connections",
+                                len(strong_connections)
+                            )
+                        with metric_col3:
+                            avg_similarity = np.mean([conn[2] for conn in strong_connections]) if strong_connections else 0
+                            st.metric(
+                                "Average Similarity",
+                                f"{avg_similarity:.2f}"
+                            )
+                        
+                        # Create publication network visualization
+                        if strong_connections:
+                            fig = analyzer.create_publication_network_plot(strong_connections, publication_groups)
+                            st.plotly_chart(fig, use_container_width=True)
+                            
+                            # Add interaction details
+                            if st.checkbox("Show Detailed Connections"):
+                                st.write("### Publication Connections")
+                                connections_df = pd.DataFrame(
+                                    strong_connections,
+                                    columns=['Publication 1', 'Publication 2', 'Similarity Score']
+                                ).sort_values('Similarity Score', ascending=False)
+                                st.dataframe(connections_df)
+                        else:
+                            st.warning("No strong connections found with current filter settings")
                 
                 
                 # Node Exploration
