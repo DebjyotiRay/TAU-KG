@@ -877,6 +877,7 @@ def main():
                         st.plotly_chart(fig)
 
                 # Research Cluster Analysis
+                
                 elif analysis_type == "Research Cluster Analysis":
                     st.subheader("Research Cluster Interaction Analysis")
                     
@@ -886,48 +887,69 @@ def main():
                     )
                     
                     if cluster_results:
-                        # Process interactions into a dataframe
-                        interaction_data = []
-                        for pair, data in cluster_results.get('interactions', {}).items():
-                            # Split the pair key into source and target clusters
-                            source_cluster = pair.split('_')[0] if isinstance(pair, str) else pair[0]
-                            target_cluster = pair.split('_')[1] if isinstance(pair, str) else pair[1]
-                            
-                            interaction_data.append({
-                                "Source Cluster": source_cluster,
-                                "Target Cluster": target_cluster,
-                                "Interaction Count": data.get('count', 0),
-                                "Average Score": data.get('avg_score', 0)
-                            })
+                        # Analysis Parameters
+                        st.write("### Analysis Overview")
+                        params = cluster_results['metadata']['parameters']
+                        col1, col2, col3, col4 = st.columns(4)
+                        with col1:
+                            st.metric("Total Clusters", cluster_results['metadata']['total_clusters'])
+                        with col2:
+                            st.metric("Total Nodes", params['node_count'])
+                        with col3:
+                            st.metric("Total Edges", params['edge_count'])
+                        with col4:
+                            st.metric("Cluster Count", params['cluster_count'])
                         
-                        if interaction_data:
-                            interaction_df = pd.DataFrame(interaction_data)
+                        # Display visualizations
+                        if 'visualizations' in cluster_results:
+                            st.write("### Inter-Cluster Interactions")
+                            st.plotly_chart(cluster_results['visualizations']['dropdown'])
                             
-                            # Display summary metrics
                             col1, col2 = st.columns(2)
                             with col1:
-                                st.metric("Total Cluster Interactions", len(interaction_data))
+                                st.write("### Interaction Heatmap")
+                                st.plotly_chart(cluster_results['visualizations']['heatmap'])
                             with col2:
-                                st.metric("Average Interaction Score", 
-                                         f"{interaction_df['Average Score'].mean():.2f}")
-                            
-                            # Display interaction matrix
-                            st.write("Cluster Interaction Matrix:")
-                            st.dataframe(interaction_df)
-                            
-                            # Display visualizations if available
-                            if 'visualizations' in cluster_results:
-                                # Heatmap
-                                if 'heatmap' in cluster_results['visualizations']:
-                                    st.plotly_chart(cluster_results['visualizations']['heatmap'])
+                                st.write("### Node Type Distribution")
+                                st.plotly_chart(cluster_results['visualizations']['composition'])
+                        
+                        # Detailed Cluster Analysis
+                        st.write("### Detailed Cluster Analysis")
+                        for cluster, details in cluster_results['cluster_details'].items():
+                            with st.expander(f"Cluster: {cluster}"):
+                                # Basic Metrics
+                                col1, col2, col3, col4 = st.columns(4)
+                                with col1:
+                                    st.metric("Total Nodes", details['total_nodes'])
+                                with col2:
+                                    st.metric("Internal Edges", details['internal_edges'])
+                                with col3:
+                                    st.metric("External Edges", details['external_edges'])
+                                with col4:
+                                    st.metric("Isolation Index", f"{details['isolation_index']:.3f}")
                                 
-                                # Cluster composition
-                                if 'composition' in cluster_results['visualizations']:
-                                    st.plotly_chart(cluster_results['visualizations']['composition'])
+                                # Additional Metrics
+                                col1, col2 = st.columns(2)
+                                with col1:
+                                    st.metric("Modularity", f"{details['modularity']:.3f}")
+                                with col2:
+                                    connection_count = len(details['inter_cluster_connections'])
+                                    st.metric("Connected Clusters", connection_count)
                                 
-                                # Dropdown visualization
-                                if 'dropdown' in cluster_results['visualizations']:
-                                    st.plotly_chart(cluster_results['visualizations']['dropdown'])
+                                # Node Type Distribution
+                                st.write("#### Node Type Distribution")
+                                st.bar_chart(details['node_types'])
+                                
+                                # Inter-cluster Connections
+                                st.write("#### Connections to Other Clusters")
+                                connections_df = pd.DataFrame([
+                                    {"Target Cluster": cluster, "Connection Count": count}
+                                    for cluster, count in details['inter_cluster_connections'].items()
+                                ]).sort_values("Connection Count", ascending=False)
+                                st.dataframe(connections_df)
+                        
+                        # Analysis Timestamp
+                        st.caption(f"Analysis performed at: {cluster_results['metadata']['analysis_timestamp'].strftime('%Y-%m-%d %H:%M:%S')}")
 
                 # Publication Relationship Mapping
                 elif analysis_type == "Publication Relationship Mapping":
