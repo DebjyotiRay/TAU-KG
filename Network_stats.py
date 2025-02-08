@@ -236,7 +236,7 @@ class NetworkAnalyzer:
     def get_pmid_distribution(self):
         """Analyze PMID distribution across nodes."""
         pmid_stats = {}
-        for node in self.nodes:
+        for node in self.nodes_data:
             pmid = node.get("PMID", "Unknown")
             if pmid not in pmid_stats:
                 pmid_stats[pmid] = {"count": 0, "nodes": []}
