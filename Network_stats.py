@@ -203,7 +203,7 @@ class NetworkAnalyzer:
             return None
     def get_network_overview(self):
         return self.network_explorer.get_network_summary()
-    def calculate_publication_similarity(pub1_nodes, pub2_nodes, min_shared=1, min_weight=0.3):
+    def calculate_publication_similarity(self, pub1_nodes, pub2_nodes, min_shared=1, min_weight=0.1):
         """Calculate similarity between two publications based on shared entities"""
         shared_types = set(n1['type'] for n1 in pub1_nodes) & set(n2['type'] for n2 in pub2_nodes)
         if not shared_types:
@@ -217,7 +217,7 @@ class NetworkAnalyzer:
             if len(shared_entities) >= min_shared:
                 similarity_score += len(shared_entities) / max(len(pub1_entities), len(pub2_entities))
                 
-        return similarity_score / len(shared_types)
+        return similarity_score / len(shared_types) if shared_types else 0.0
     
     def create_publication_network_plot(connections, publication_groups):
         """Create an interactive network visualization of publication relationships"""
