@@ -233,6 +233,22 @@ class NetworkAnalyzer:
             self._display_cluster_interactions(basic_stats)
             self._display_pathway_analysis()
 
+    def get_pmid_distribution(self):
+        """Analyze PMID distribution across nodes."""
+        pmid_stats = {}
+        for node in self.nodes:
+            pmid = node.get("PMID", "Unknown")
+            if pmid not in pmid_stats:
+                pmid_stats[pmid] = {"count": 0, "nodes": []}
+            pmid_stats[pmid]["count"] += 1
+            pmid_stats[pmid]["nodes"].append(node["id"])
+        return pmid_stats
+    
+    def get_hub_nodes(self, top_n=10):
+        """Identify hub nodes based on connectivity."""
+        centrality = self.get_node_centrality()
+        return dict(sorted(centrality.items(), key=lambda x: x[1], reverse=True)[:top_n])
+        
     def _display_network_overview(self, basic_stats):
         """Display network overview statistics"""
         st.header("Network Overview")
