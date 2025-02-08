@@ -911,38 +911,46 @@ def main():
                         return None
 
                 # Publication Network Overview
+                # Publication Network Overview
                 if analysis_type == "Publication Network Overview":
                     st.subheader("Scientific Publication Network Insights")
                     
-                    paper_stats = analyzer.get_paper_distribution()
+                    # Count nodes per PMID
+                    pmid_counts = defaultdict(int)
+                    for node in nodes_data:
+                        pmid = str(node.get('PMID', 'Unknown'))
+                        pmid_counts[pmid] += 1
                     
-                    if paper_stats:
-                        df = pd.DataFrame(paper_stats)
-                        # Display metrics
-                        col1, col2, col3 = st.columns(3)
-                        with col1:
-                            st.metric("Total Papers", len(paper_stats))
-                        with col2:
-                            st.metric("Average Nodes per Paper", f"{df['nodes'].mean():.1f}")
-                        with col3:
-                            st.metric("Max Nodes in Paper", df['nodes'].max())
-                        
-                        # Create distribution plot
-                        fig = go.Figure(data=[
-                            go.Bar(x=df['PMID'], y=df['nodes'], name='Nodes per Paper')
-                        ])
-                        
-                        fig.update_layout(
-                            title='Distribution of Nodes Across Papers',
-                            xaxis_title='Paper PMID',
-                            yaxis_title='Number of Nodes',
-                            height=500
-                        )
-                        
-                        st.plotly_chart(fig)
-                        
-                        if st.checkbox("Show Raw Data"):
-                            st.dataframe(df)
+                    # Create DataFrame for visualization
+                    df = pd.DataFrame(list(pmid_counts.items()), columns=['PMID', 'Nodes'])
+                    df = df.sort_values('Nodes', ascending=False)
+                    
+                    # Display metrics
+                    col1, col2, col3 = st.columns(3)
+                    with col1:
+                        st.metric("Total Papers", len(pmid_counts))
+                    with col2:
+                        st.metric("Average Nodes per Paper", f"{df['Nodes'].mean():.1f}")
+                    with col3:
+                        st.metric("Max Nodes in Paper", df['Nodes'].max())
+                    
+                    # Create distribution plot
+                    fig = go.Figure(data=[
+                        go.Bar(x=df['PMID'], y=df['Nodes'], name='Nodes per Paper')
+                    ])
+                    
+                    fig.update_layout(
+                        title='Distribution of Nodes Across Papers',
+                        xaxis_title='Paper PMID',
+                        yaxis_title='Number of Nodes',
+                        height=500,
+                        showlegend=False
+                    )
+                    
+                    st.plotly_chart(fig)
+                    
+                    if st.checkbox("Show Raw Data"):
+                        st.dataframe(df)
 
                 # PMID-Based Network Exploration
                 elif analysis_type == "PMID-Based Network Exploration":
