@@ -255,7 +255,45 @@ def display_network_stats(nodes_data, edges_data, selected_cluster):
     for node_type, count in node_types_count.items():
         percentage = (count / total_nodes) * 100
         st.sidebar.write(f"{node_type.capitalize()}: {count} ({percentage:.1f}%)")
-
+def display_paper_analysis_tab():
+    st.header("Scientific Publication Network Insights")
+    
+    # Count nodes per PMID
+    pmid_counts = defaultdict(int)
+    for node in nodes_data:
+        pmid = str(node.get('PMID', 'Unknown'))
+        pmid_counts[pmid] += 1
+    
+    # Create DataFrame
+    df = pd.DataFrame(list(pmid_counts.items()), columns=['PMID', 'Node Count'])
+    df = df.sort_values('Node Count', ascending=False)
+    
+    # Display metrics without relying on paper_results dictionary
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.metric("Total Papers", len(pmid_counts))
+    with col2:
+        st.metric("Average Nodes per Paper", f"{df['Node Count'].mean():.1f}")
+    with col3:
+        st.metric("Max Nodes in Paper", df['Node Count'].max())
+    
+    # Create distribution plot
+    fig = go.Figure(data=[
+        go.Bar(x=df['PMID'], y=df['Node Count'], name='Nodes per Paper')
+    ])
+    
+    fig.update_layout(
+        title='Distribution of Nodes Across Papers',
+        xaxis_title='Paper PMID',
+        yaxis_title='Number of Nodes',
+        height=500
+    )
+    
+    st.plotly_chart(fig)
+    
+    # Option to show raw data
+    if st.checkbox("Show Raw Data"):
+        st.dataframe(df)
 def add_search_functionality():
     """Add search box for finding specific nodes."""
     st.sidebar.markdown("---")
@@ -876,32 +914,35 @@ def main():
                 if analysis_type == "Publication Network Overview":
                     st.subheader("Scientific Publication Network Insights")
                     
-                    paper_results = safe_analysis(
-                        analyzer.get_paper_distribution,
-                        "Error in Paper Distribution Analysis"
-                    )
+                    paper_stats = analyzer.get_paper_distribution()
                     
-                    if paper_results:
-                        # Comprehensive Publication Metrics
-                        cols = st.columns(4)
-                        with cols[0]:
-                            st.metric("Total Unique Papers", paper_results['summary']['total_papers'])
-                            st.metric("Avg Nodes/Paper", f"{paper_results['summary']['avg_nodes_per_paper']:.2f}")
-                        with cols[1]:
-                            st.metric("Total Network Nodes", 
-                                    sum(paper['Nodes'] for paper in paper_results['paper_details']))
-                            st.metric("Avg Edges/Paper", f"{paper_results['summary']['avg_edges_per_paper']:.2f}")
-                        with cols[2]:
-                            st.metric("Publication Diversity", 
-                                    f"{len(set(paper['PMID'] for paper in paper_results['paper_details']))}")
-                            st.metric("Network Complexity", f"{paper_results['summary']['avg_density']:.4f}")
-                        with cols[3]:
-                            st.metric("Research Domains", 
-                                    f"{len(set(type for paper in paper_results['paper_details'] for type in paper['Node_Types']))}")
-                            st.metric("Avg Paper Connectivity", f"{paper_results['summary'].get('avg_paper_connectivity', 0):.2f}")
+                    if paper_stats:
+                        df = pd.DataFrame(paper_stats)
+                        # Display metrics
+                        col1, col2, col3 = st.columns(3)
+                        with col1:
+                            st.metric("Total Papers", len(paper_stats))
+                        with col2:
+                            st.metric("Average Nodes per Paper", f"{df['nodes'].mean():.1f}")
+                        with col3:
+                            st.metric("Max Nodes in Paper", df['nodes'].max())
                         
-                        # Advanced Visualizations
-                        st.plotly_chart(paper_results['visualizations']['main_overview'])
+                        # Create distribution plot
+                        fig = go.Figure(data=[
+                            go.Bar(x=df['PMID'], y=df['nodes'], name='Nodes per Paper')
+                        ])
+                        
+                        fig.update_layout(
+                            title='Distribution of Nodes Across Papers',
+                            xaxis_title='Paper PMID',
+                            yaxis_title='Number of Nodes',
+                            height=500
+                        )
+                        
+                        st.plotly_chart(fig)
+                        
+                        if st.checkbox("Show Raw Data"):
+                            st.dataframe(df)
 
                 # PMID-Based Network Exploration
                 elif analysis_type == "PMID-Based Network Exploration":
@@ -953,29 +994,57 @@ def main():
                 elif analysis_type == "Temporal Research Dynamics":
                     st.subheader("Research Evolution and Dynamics")
                     
-                    temporal_results = safe_analysis(
-                        analyzer.get_temporal_analysis, 
-                        "Error in Temporal Analysis"
-                    )
-                    
+                    temporal_results = analyzer.advanced_analyzer.get_temporal_analysis()
                     if temporal_results:
-                        # Comprehensive Temporal Metrics
-                        cols = st.columns(4)
-                        with cols[0]:
-                            st.metric("Research Papers Timeline", 
-                                    f"{temporal_results['summary']['total_pmids']} Publications")
-                        with cols[1]:
-                            st.metric("Network Growth", 
-                                    f"{temporal_results['trend_analysis']['node_growth_rate']:.4f}")
-                        with cols[2]:
-                            st.metric("Connectivity Evolution", 
-                                    f"{temporal_results['trend_analysis']['edge_growth_rate']:.4f}")
-                        with cols[3]:
-                            st.metric("Network Complexity Trend", 
-                                    f"{temporal_results['trend_analysis']['density_trend']:.4f}")
+                        # Convert to DataFrame for easier manipulation
+                        df = pd.DataFrame(temporal_results)
+                        df = df.sort_values('PMID')
                         
-                        # Temporal Evolution Visualization
-                        st.plotly_chart(temporal_results['visualizations']['temporal_evolution'])
+                        # Display metrics
+                        col1, col2 = st.columns(2)
+                        with col1:
+                            st.metric("Total Publications", len(df))
+                        with col2:
+                            st.metric("Average Nodes per Publication", f"{df['nodes'].mean():.1f}")
+                        
+                        # Create visualization
+                        fig = make_subplots(
+                            rows=2, cols=2,
+                            subplot_titles=(
+                                'Nodes Over Time',
+                                'Edges Over Time',
+                                'Network Density',
+                                'Average Degree'
+                            )
+                        )
+                        
+                        fig.add_trace(
+                            go.Scatter(x=df['PMID'], y=df['nodes'], 
+                                      mode='lines+markers', name='Nodes'),
+                            row=1, col=1
+                        )
+                        
+                        fig.add_trace(
+                            go.Scatter(x=df['PMID'], y=df['edges'], 
+                                      mode='lines+markers', name='Edges'),
+                            row=1, col=2
+                        )
+                        
+                        fig.add_trace(
+                            go.Scatter(x=df['PMID'], y=df['density'], 
+                                      mode='lines+markers', name='Density'),
+                            row=2, col=1
+                        )
+                        
+                        fig.add_trace(
+                            go.Scatter(x=df['PMID'], y=df['avg_degree'], 
+                                      mode='lines+markers', name='Avg Degree'),
+                            row=2, col=2
+                        )
+                        
+                        fig.update_layout(height=800, showlegend=True,
+                                        title_text='Network Evolution Over Time')
+                        st.plotly_chart(fig)
 
                 # Research Cluster Analysis
                 elif analysis_type == "Research Cluster Analysis":
@@ -1001,7 +1070,7 @@ def main():
                 elif analysis_type == "Publication Relationship Mapping":
                     st.subheader("Publication Relationship Network")
                     
-                    # Advanced filtering and exploration
+                    # Advanced filtering controls
                     min_connections = st.slider(
                         "Minimum Connections", 
                         min_value=1, 
@@ -1017,14 +1086,13 @@ def main():
                         step=0.1
                     )
                     
-                    # Implement relationship mapping logic here
-                    # This would involve filtering edges based on connection strength
-                    filtered_edges = [
+                    # Calculate strong connections
+                    strong_connections = len([
                         edge for edge in edges_data 
-                        if edge['score'] >= min_weight
-                    ]
+                        if edge.get('weight', 0) >= min_weight
+                    ])
                     
-                    st.metric("Publications with Strong Connections", len(filtered_edges))
+                    st.metric("Publications with Strong Connections", strong_connections)
 
                 # Node Exploration
                 elif analysis_type == "Node Exploration":
