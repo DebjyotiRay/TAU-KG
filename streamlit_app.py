@@ -787,7 +787,7 @@ def main():
                 # Publication Network Overview
                 if analysis_type == "Publication Network Overview":
                     st.subheader("Publication Distribution")
-                    pmid_stats = get_pmid_distribution()
+                    pmid_stats = analyzer.get_pmid_distribution()
                     pmid_df = pd.DataFrame([
                         {"PMID": pmid, "Node Count": data["count"]}
                         for pmid, data in pmid_stats.items()
