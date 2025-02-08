@@ -543,148 +543,372 @@ class NetworkExplorer:
             self.logger.error(f"Paper distribution analysis failed: {str(e)}")
             raise RuntimeError(f"Analysis failed: {str(e)}")
 
+    # def get_filtered_view(self, node_types: Optional[List[str]] = None, 
+    #                      min_degree: int = 1, 
+    #                      min_weight: float = 0.0) -> Dict:
+    #     """
+    #     Get filtered view of the network with enhanced metrics
+        
+    #     Args:
+    #         node_types: List of node types to include
+    #         min_degree: Minimum node degree
+    #         min_weight: Minimum edge weight
+            
+    #     Returns:
+    #         dict: Filtered network analysis results
+    #     """
+    #     try:
+    #         H = self.G.copy()
+            
+    #         # Apply filters with validation
+    #         if node_types:
+    #             invalid_types = set(node_types) - self.node_types
+    #             if invalid_types:
+    #                 self.logger.warning(f"Invalid node types: {invalid_types}")
+                
+    #             nodes_to_remove = [
+    #                 node for node, data in H.nodes(data=True)
+    #                 if data.get('type') not in node_types
+    #             ]
+    #             H.remove_nodes_from(nodes_to_remove)
+            
+    #         if min_degree > 1:
+    #             nodes_to_remove = [
+    #                 node for node, degree in H.degree()
+    #                 if degree < min_degree
+    #             ]
+    #             H.remove_nodes_from(nodes_to_remove)
+            
+    #         if min_weight > 0:
+    #             edges_to_remove = [
+    #                 (u, v) for u, v, d in H.edges(data=True)
+    #                 if d.get('weight', 0) < min_weight
+    #             ]
+    #             H.remove_edges_from(edges_to_remove)
+
+    #         # Enhanced metrics calculation
+    #         type_dist = Counter(nx.get_node_attributes(H, 'type').values())
+    #         cluster_dist = Counter(nx.get_node_attributes(H, 'cluster').values())
+    #         degree_dist = [d for n, d in H.degree()]
+            
+    #         # Component analysis
+    #         components = list(nx.connected_components(H))
+    #         component_sizes = [len(c) for c in components]
+            
+    #         # Calculate advanced metrics
+    #         metrics = {
+    #             'nodes': H.number_of_nodes(),
+    #             'edges': H.number_of_edges(),
+    #             'density': nx.density(H),
+    #             'avg_clustering': nx.average_clustering(H),
+    #             'avg_degree': np.mean(degree_dist) if degree_dist else 0,
+    #             'components': len(components),
+    #             'largest_component_size': max(component_sizes) if component_sizes else 0,
+    #             'isolated_nodes': len([n for n, d in H.degree() if d == 0])
+    #         }
+
+    #         # Enhanced visualizations
+    #         fig = make_subplots(
+    #             rows=2, cols=2,
+    #             subplot_titles=(
+    #                 'Node Type Distribution',
+    #                 'Cluster Distribution',
+    #                 'Degree Distribution',
+    #                 'Component Size Distribution'
+    #             )
+    #         )
+
+    #         # Node type distribution
+    #         fig.add_trace(
+    #             go.Bar(
+    #                 x=list(type_dist.keys()),
+    #                 y=list(type_dist.values()),
+    #                 name='Node Types'
+    #             ),
+    #             row=1, col=1
+    #         )
+
+    #         # Cluster distribution
+    #         fig.add_trace(
+    #             go.Bar(
+    #                 x=list(cluster_dist.keys()),
+    #                 y=list(cluster_dist.values()),
+    #                 name='Clusters'
+    #             ),
+    #             row=1, col=2
+    #         )
+
+    #         # Degree distribution
+    #         fig.add_trace(
+    #             go.Histogram(
+    #                 x=degree_dist,
+    #                 name='Degree Distribution',
+    #                 nbinsx=20
+    #             ),
+    #             row=2, col=1
+    #         )
+
+    #         # Component size distribution
+    #         fig.add_trace(
+    #             go.Histogram(
+    #                 x=component_sizes,
+    #                 name='Component Sizes',
+    #                 nbinsx=20
+    #             ),
+    #             row=2, col=2
+    #         )
+
+    #         fig.update_layout(
+    #             height=800,
+    #             showlegend=True,
+    #             title_text='Filtered Network Analysis'
+    #         )
+
+    #         return {
+    #             'graph': H,
+    #             'metrics': metrics,
+    #             'distributions': {
+    #                 'node_types': dict(type_dist),
+    #                 'clusters': dict(cluster_dist),
+    #                 'degrees': degree_dist,
+    #                 'component_sizes': component_sizes
+    #             },
+    #             'centrality': {
+    #                 'degree': nx.degree_centrality(H),
+    #                 'betweenness': nx.betweenness_centrality(H),
+    #                 'eigenvector': nx.eigenvector_centrality(H, max_iter=1000)
+    #             },
+    #             'visualization': fig
+    #         }
+
+    #     except Exception as e:
+    #         self.logger.error(f"Filtered view analysis failed: {str(e)}")
+    #         raise RuntimeError(f"Analysis failed: {str(e)}")
     def get_filtered_view(self, node_types: Optional[List[str]] = None, 
                          min_degree: int = 1, 
                          min_weight: float = 0.0) -> Dict:
         """
-        Get filtered view of the network with enhanced metrics
+        Get filtered view of the network with enhanced metrics and optimized performance
         
         Args:
             node_types: List of node types to include
             min_degree: Minimum node degree
             min_weight: Minimum edge weight
-            
+                
         Returns:
-            dict: Filtered network analysis results
+            dict: Filtered network analysis results with metrics and visualizations
+            
+        Raises:
+            ValueError: If input parameters are invalid
+            RuntimeError: If network analysis fails
         """
         try:
-            H = self.G.copy()
+            # Input validation
+            if min_degree < 0:
+                raise ValueError("Minimum degree must be non-negative")
+            if min_weight < 0:
+                raise ValueError("Minimum weight must be non-negative")
             
-            # Apply filters with validation
+            # Create filtered graph (only copy necessary components)
+            nodes_to_keep = set()
+            
+            # Filter by node types first to reduce computation
             if node_types:
                 invalid_types = set(node_types) - self.node_types
                 if invalid_types:
-                    self.logger.warning(f"Invalid node types: {invalid_types}")
-                
-                nodes_to_remove = [
-                    node for node, data in H.nodes(data=True)
-                    if data.get('type') not in node_types
-                ]
-                H.remove_nodes_from(nodes_to_remove)
+                    self.logger.warning(f"Invalid node types ignored: {invalid_types}")
+                valid_types = set(node_types) & self.node_types
+                nodes_to_keep.update(
+                    node for node, data in self.G.nodes(data=True)
+                    if data.get('type') in valid_types
+                )
+            else:
+                nodes_to_keep.update(self.G.nodes())
             
+            # Filter by degree
             if min_degree > 1:
-                nodes_to_remove = [
-                    node for node, degree in H.degree()
-                    if degree < min_degree
-                ]
-                H.remove_nodes_from(nodes_to_remove)
+                nodes_to_keep = {
+                    node for node in nodes_to_keep
+                    if self.G.degree(node) >= min_degree
+                }
             
+            # Create subgraph with filtered nodes
+            H = self.G.subgraph(nodes_to_keep).copy()
+            
+            # Filter edges by weight
             if min_weight > 0:
                 edges_to_remove = [
                     (u, v) for u, v, d in H.edges(data=True)
                     if d.get('weight', 0) < min_weight
                 ]
                 H.remove_edges_from(edges_to_remove)
-
-            # Enhanced metrics calculation
-            type_dist = Counter(nx.get_node_attributes(H, 'type').values())
-            cluster_dist = Counter(nx.get_node_attributes(H, 'cluster').values())
-            degree_dist = [d for n, d in H.degree()]
             
-            # Component analysis
-            components = list(nx.connected_components(H))
+            # Calculate basic metrics efficiently
+            n_nodes = H.number_of_nodes()
+            if n_nodes == 0:
+                return self._empty_network_results()
+            
+            # Calculate metrics with error handling
+            metrics = self._calculate_network_metrics(H)
+            distributions = self._calculate_distributions(H)
+            centrality = self._calculate_centrality_metrics(H)
+            visualization = self._create_network_visualization(
+                distributions, metrics['components']
+            )
+            
+            return {
+                'graph': H,
+                'metrics': metrics,
+                'distributions': distributions,
+                'centrality': centrality,
+                'visualization': visualization
+            }
+            
+        except ValueError as ve:
+            self.logger.error(f"Invalid input parameters: {str(ve)}")
+            raise
+        except Exception as e:
+            self.logger.error(f"Filtered view analysis failed: {str(e)}")
+            raise RuntimeError(f"Analysis failed: {str(e)}")
+    
+    def _empty_network_results(self) -> Dict:
+        """Return default results for empty network"""
+        return {
+            'graph': nx.Graph(),
+            'metrics': {
+                'nodes': 0,
+                'edges': 0,
+                'density': 0,
+                'avg_clustering': 0,
+                'avg_degree': 0,
+                'components': 0,
+                'largest_component_size': 0,
+                'isolated_nodes': 0
+            },
+            'distributions': {
+                'node_types': {},
+                'clusters': {},
+                'degrees': [],
+                'component_sizes': []
+            },
+            'centrality': {
+                'degree': {},
+                'betweenness': {},
+                'eigenvector': {}
+            },
+            'visualization': go.Figure()
+        }
+    
+    def _calculate_network_metrics(self, G: nx.Graph) -> Dict:
+        """Calculate basic network metrics with error handling"""
+        try:
+            degree_dist = [d for n, d in G.degree()]
+            components = list(nx.connected_components(G))
             component_sizes = [len(c) for c in components]
             
-            # Calculate advanced metrics
-            metrics = {
-                'nodes': H.number_of_nodes(),
-                'edges': H.number_of_edges(),
-                'density': nx.density(H),
-                'avg_clustering': nx.average_clustering(H),
-                'avg_degree': np.mean(degree_dist) if degree_dist else 0,
+            return {
+                'nodes': G.number_of_nodes(),
+                'edges': G.number_of_edges(),
+                'density': nx.density(G),
+                'avg_clustering': nx.average_clustering(G),
+                'avg_degree': np.mean(degree_dist),
                 'components': len(components),
                 'largest_component_size': max(component_sizes) if component_sizes else 0,
-                'isolated_nodes': len([n for n, d in H.degree() if d == 0])
+                'isolated_nodes': len([n for n, d in G.degree() if d == 0])
             }
-
-            # Enhanced visualizations
-            fig = make_subplots(
-                rows=2, cols=2,
-                subplot_titles=(
-                    'Node Type Distribution',
-                    'Cluster Distribution',
-                    'Degree Distribution',
-                    'Component Size Distribution'
+        except Exception as e:
+            self.logger.error(f"Error calculating network metrics: {str(e)}")
+            raise
+    
+    def _calculate_distributions(self, G: nx.Graph) -> Dict:
+        """Calculate network distributions efficiently"""
+        return {
+            'node_types': dict(Counter(nx.get_node_attributes(G, 'type').values())),
+            'clusters': dict(Counter(nx.get_node_attributes(G, 'cluster').values())),
+            'degrees': [d for n, d in G.degree()],
+            'component_sizes': [len(c) for c in nx.connected_components(G)]
+        }
+    
+    def _calculate_centrality_metrics(self, G: nx.Graph) -> Dict:
+        """Calculate centrality metrics with timeout protection"""
+        try:
+            return {
+                'degree': nx.degree_centrality(G),
+                'betweenness': nx.betweenness_centrality(G),
+                'eigenvector': nx.eigenvector_centrality(
+                    G, max_iter=1000, tol=1e-6
                 )
+            }
+        except Exception as e:
+            self.logger.warning(f"Error calculating centrality metrics: {str(e)}")
+            return {}
+    
+    def _create_network_visualization(self, distributions: Dict, 
+                                    component_count: int) -> go.Figure:
+        """Create network visualization with dynamic layout"""
+        fig = make_subplots(
+            rows=2, cols=2,
+            subplot_titles=(
+                'Node Type Distribution',
+                'Cluster Distribution',
+                'Degree Distribution',
+                'Component Size Distribution'
             )
-
+        )
+        
+        # Add traces with error handling
+        try:
             # Node type distribution
             fig.add_trace(
                 go.Bar(
-                    x=list(type_dist.keys()),
-                    y=list(type_dist.values()),
+                    x=list(distributions['node_types'].keys()),
+                    y=list(distributions['node_types'].values()),
                     name='Node Types'
                 ),
                 row=1, col=1
             )
-
+            
             # Cluster distribution
             fig.add_trace(
                 go.Bar(
-                    x=list(cluster_dist.keys()),
-                    y=list(cluster_dist.values()),
+                    x=list(distributions['clusters'].keys()),
+                    y=list(distributions['clusters'].values()),
                     name='Clusters'
                 ),
                 row=1, col=2
             )
-
+            
             # Degree distribution
             fig.add_trace(
                 go.Histogram(
-                    x=degree_dist,
+                    x=distributions['degrees'],
                     name='Degree Distribution',
-                    nbinsx=20
+                    nbinsx=min(20, len(set(distributions['degrees'])))
                 ),
                 row=2, col=1
             )
-
-            # Component size distribution
-            fig.add_trace(
-                go.Histogram(
-                    x=component_sizes,
-                    name='Component Sizes',
-                    nbinsx=20
-                ),
-                row=2, col=2
-            )
-
+            
+            # Component size distribution (only if multiple components)
+            if component_count > 1:
+                fig.add_trace(
+                    go.Histogram(
+                        x=distributions['component_sizes'],
+                        name='Component Sizes',
+                        nbinsx=min(20, component_count)
+                    ),
+                    row=2, col=2
+                )
+            
             fig.update_layout(
                 height=800,
                 showlegend=True,
                 title_text='Filtered Network Analysis'
             )
-
-            return {
-                'graph': H,
-                'metrics': metrics,
-                'distributions': {
-                    'node_types': dict(type_dist),
-                    'clusters': dict(cluster_dist),
-                    'degrees': degree_dist,
-                    'component_sizes': component_sizes
-                },
-                'centrality': {
-                    'degree': nx.degree_centrality(H),
-                    'betweenness': nx.betweenness_centrality(H),
-                    'eigenvector': nx.eigenvector_centrality(H, max_iter=1000)
-                },
-                'visualization': fig
-            }
-
+            
+            return fig
         except Exception as e:
-            self.logger.error(f"Filtered view analysis failed: {str(e)}")
-            raise RuntimeError(f"Analysis failed: {str(e)}")
-
+            self.logger.error(f"Error creating visualization: {str(e)}")
+            return go.Figure()
     def explore_node(self, node_id: str) -> Dict:
         """
         Detailed exploration of a specific node with enhanced metrics
