@@ -954,33 +954,166 @@ def main():
                         st.caption(f"Analysis performed at: {cluster_results['metadata']['analysis_timestamp'].strftime('%Y-%m-%d %H:%M:%S')}")
 
                 # Publication Relationship Mapping
+                # In the "Publication Relationship Mapping" section:
                 elif analysis_type == "Publication Relationship Mapping":
                     st.subheader("Publication Relationship Network")
                     
-                    # Advanced filtering controls
-                    min_connections = st.slider(
-                        "Minimum Connections", 
-                        min_value=1, 
-                        max_value=10, 
-                        value=2
+                    col1, col2 = st.columns([1, 2])
+                    
+                    with col1:
+                        # More meaningful filtering controls
+                        st.write("### Filter Settings")
+                        min_connections = st.slider(
+                            "Minimum Shared Entities", 
+                            min_value=1, 
+                            max_value=10, 
+                            value=2,
+                            help="Minimum number of shared entities (genes, proteins, etc.) between publications"
+                        )
+                        
+                        min_weight = st.slider(
+                            "Minimum Relationship Strength", 
+                            min_value=0.0, 
+                            max_value=1.0, 
+                            value=0.3,
+                            step=0.1,
+                            help="Minimum similarity score between publications"
+                        )
+                        
+                        # Add publication type filter
+                        pub_types = st.multiselect(
+                            "Filter by Publication Types",
+                            options=list(set(node.get('type', '') for node in nodes_data)),
+                            help="Select specific types of publications to analyze"
+                        )
+                        
+                    with col2:
+                        # Publication Statistics
+                        st.write("### Publication Network Statistics")
+                        
+                        # Calculate meaningful metrics
+                        publication_groups = defaultdict(list)
+                        for node in nodes_data:
+                            pmid = node.get('PMID', 'Unknown')
+                            publication_groups[pmid].append(node)
+                            
+                        strong_connections = []
+                        for pmid1, pmid2 in combinations(publication_groups.keys(), 2):
+                            similarity = calculate_publication_similarity(
+                                publication_groups[pmid1],
+                                publication_groups[pmid2],
+                                min_shared=min_connections,
+                                min_weight=min_weight
+                            )
+                            if similarity > min_weight:
+                                strong_connections.append((pmid1, pmid2, similarity))
+                        
+                        # Display meaningful metrics
+                        metric_col1, metric_col2, metric_col3 = st.columns(3)
+                        with metric_col1:
+                            st.metric(
+                                "Connected Publications",
+                                len(set(pmid for conn in strong_connections for pmid in conn[:2]))
+                            )
+                        with metric_col2:
+                            st.metric(
+                                "Strong Connections",
+                                len(strong_connections)
+                            )
+                        with metric_col3:
+                            avg_similarity = np.mean([conn[2] for conn in strong_connections]) if strong_connections else 0
+                            st.metric(
+                                "Average Similarity",
+                                f"{avg_similarity:.2f}"
+                            )
+                        
+                        # Create publication network visualization
+                        if strong_connections:
+                            fig = create_publication_network_plot(strong_connections, publication_groups)
+                            st.plotly_chart(fig, use_container_width=True)
+                            
+                            # Add interaction details
+                            if st.checkbox("Show Detailed Connections"):
+                                st.write("### Publication Connections")
+                                connections_df = pd.DataFrame(
+                                    strong_connections,
+                                    columns=['Publication 1', 'Publication 2', 'Similarity Score']
+                                ).sort_values('Similarity Score', ascending=False)
+                                st.dataframe(connections_df)
+                        else:
+                            st.warning("No strong connections found with current filter settings")
+                
+                # Add these helper functions:
+                def calculate_publication_similarity(pub1_nodes, pub2_nodes, min_shared=1, min_weight=0.3):
+                    """Calculate similarity between two publications based on shared entities"""
+                    shared_types = set(n1['type'] for n1 in pub1_nodes) & set(n2['type'] for n2 in pub2_nodes)
+                    if not shared_types:
+                        return 0.0
+                        
+                    similarity_score = 0
+                    for entity_type in shared_types:
+                        pub1_entities = set(n['id'] for n in pub1_nodes if n['type'] == entity_type)
+                        pub2_entities = set(n['id'] for n in pub2_nodes if n['type'] == entity_type)
+                        shared_entities = pub1_entities & pub2_entities
+                        if len(shared_entities) >= min_shared:
+                            similarity_score += len(shared_entities) / max(len(pub1_entities), len(pub2_entities))
+                            
+                    return similarity_score / len(shared_types)
+                
+                def create_publication_network_plot(connections, publication_groups):
+                    """Create an interactive network visualization of publication relationships"""
+                    # Create nodes
+                    nodes = list(set(pmid for conn in connections for pmid in conn[:2]))
+                    node_sizes = [len(publication_groups[pmid]) for pmid in nodes]
+                    
+                    # Create the network plot using plotly
+                    fig = go.Figure()
+                    
+                    # Add edges (connections)
+                    edge_x, edge_y = [], []
+                    edge_colors = []
+                    for source, target, weight in connections:
+                        source_idx = nodes.index(source)
+                        target_idx = nodes.index(target)
+                        edge_x.extend([source_idx, target_idx, None])
+                        edge_y.extend([0, 0, None])
+                        edge_colors.extend([weight, weight, weight])
+                    
+                    fig.add_trace(go.Scatter(
+                        x=edge_x, y=edge_y,
+                        line=dict(width=1, color=edge_colors),
+                        hoverinfo='none',
+                        mode='lines',
+                        showlegend=False
+                    ))
+                    
+                    # Add nodes
+                    fig.add_trace(go.Scatter(
+                        x=list(range(len(nodes))),
+                        y=[0] * len(nodes),
+                        mode='markers+text',
+                        marker=dict(
+                            size=[s * 10 for s in node_sizes],
+                            color='lightblue',
+                            line=dict(width=2)
+                        ),
+                        text=nodes,
+                        hovertext=[f"PMID: {pmid}<br>Entities: {len(publication_groups[pmid])}" 
+                                  for pmid in nodes],
+                        textposition="top center"
+                    ))
+                    
+                    fig.update_layout(
+                        title="Publication Relationship Network",
+                        showlegend=False,
+                        hovermode='closest',
+                        margin=dict(b=20,l=5,r=5,t=40),
+                        xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+                        yaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+                        height=600
                     )
                     
-                    min_weight = st.slider(
-                        "Minimum Connection Weight", 
-                        min_value=0.0, 
-                        max_value=1.0, 
-                        value=0.5,
-                        step=0.1
-                    )
-                    
-                    # Calculate strong connections
-                    strong_connections = len([
-                        edge for edge in edges_data 
-                        if edge.get('weight', 0) >= min_weight
-                    ])
-                    
-                    st.metric("Publications with Strong Connections", strong_connections)
-
+                    return fig
                 # Node Exploration
                 elif analysis_type == "Node Exploration":
                     st.subheader("Detailed Node Analysis")
