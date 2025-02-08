@@ -953,7 +953,7 @@ def main():
                         # Analysis Timestamp
                         st.caption(f"Analysis performed at: {cluster_results['metadata']['analysis_timestamp'].strftime('%Y-%m-%d %H:%M:%S')}")
 
-                # Publication Relationship Mapping
+                
                 # In the "Publication Relationship Mapping" section:
                 elif analysis_type == "Publication Relationship Mapping":
                     st.subheader("Publication Relationship Network")
@@ -1043,7 +1043,7 @@ def main():
                         else:
                             st.warning("No strong connections found with current filter settings")
                 
-                # Add these helper functions:
+                
                 
                 # Node Exploration
                 elif analysis_type == "Node Exploration":
