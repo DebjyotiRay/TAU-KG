@@ -117,7 +117,89 @@ class NetworkAnalyzer:
 
     def explore_node_details(self, node_id):
         return self.network_explorer.explore_node(node_id)
-
+    def get_network_entropy(self):
+        """
+        Calculate network entropy metrics
+        
+        Returns:
+            dict: Network entropy measures and visualizations
+        """
+        try:
+            # Calculate degree entropy
+            degree_counts = Counter(dict(self.G.degree()).values())
+            total_degrees = sum(degree_counts.values())
+            degree_probs = [count/total_degrees for count in degree_counts.values()]
+            degree_entropy = -sum(p * np.log2(p) for p in degree_probs if p > 0)
+            
+            # Calculate type entropy
+            type_counts = Counter(nx.get_node_attributes(self.G, 'type').values())
+            total_types = sum(type_counts.values())
+            type_probs = [count/total_types for count in type_counts.values()]
+            type_entropy = -sum(p * np.log2(p) for p in type_probs if p > 0)
+            
+            # Calculate cluster entropy
+            cluster_counts = Counter(nx.get_node_attributes(self.G, 'cluster').values())
+            total_clusters = sum(cluster_counts.values())
+            cluster_probs = [count/total_clusters for count in cluster_counts.values()]
+            cluster_entropy = -sum(p * np.log2(p) for p in cluster_probs if p > 0)
+            
+            # Create visualizations
+            fig = make_subplots(rows=2, cols=2,
+                               subplot_titles=('Degree Distribution',
+                                             'Type Distribution',
+                                             'Cluster Distribution',
+                                             'Entropy Comparison'))
+            
+            # Add distribution plots
+            fig.add_trace(
+                go.Bar(x=list(degree_counts.keys()),
+                      y=list(degree_counts.values()),
+                      name='Degree Dist'),
+                row=1, col=1
+            )
+            
+            fig.add_trace(
+                go.Bar(x=list(type_counts.keys()),
+                      y=list(type_counts.values()),
+                      name='Type Dist'),
+                row=1, col=2
+            )
+            
+            fig.add_trace(
+                go.Bar(x=list(cluster_counts.keys()),
+                      y=list(cluster_counts.values()),
+                      name='Cluster Dist'),
+                row=2, col=1
+            )
+            
+            # Add entropy comparison
+            fig.add_trace(
+                go.Bar(x=['Degree', 'Type', 'Cluster'],
+                      y=[degree_entropy, type_entropy, cluster_entropy],
+                      name='Entropy Values'),
+                row=2, col=2
+            )
+            
+            fig.update_layout(height=800, showlegend=True,
+                             title_text='Network Entropy Analysis')
+            
+            return {
+                'entropy_measures': {
+                    'degree_entropy': degree_entropy,
+                    'type_entropy': type_entropy,
+                    'cluster_entropy': cluster_entropy
+                },
+                'distributions': {
+                    'degree': dict(degree_counts),
+                    'type': dict(type_counts),
+                    'cluster': dict(cluster_counts)
+                },
+                'visualization': fig
+            }
+            
+        except Exception as e:
+            self.logger.error(f"Network entropy calculation failed: {str(e)}")
+            return None
     def get_network_overview(self):
         return self.network_explorer.get_network_summary()
     # Streamlit Display Methods
