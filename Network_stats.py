@@ -94,22 +94,23 @@ class NetworkAnalyzer:
 
     def get_paper_distribution(self):
         """Get paper distribution analysis"""
-        # Convert PMIDs to strings for comparison
-        unique_pmids = sorted(set(str(node.get('PMID', 'Unknown')) 
-                                 for node in self.nodes_data))
-        paper_stats = {}
+        pmid_counts = defaultdict(int)
+        for node in self.nodes_data:
+            pmid = str(node.get('PMID', 'Unknown'))
+            pmid_counts[pmid] += 1
         
-        for pmid in unique_pmids:
-            nodes = [node for node in self.nodes_data 
-                    if str(node.get('PMID', 'Unknown')) == pmid]
-            edges = [edge for edge in self.edges_data 
-                    if str(self.G.nodes[edge['source']].get('PMID', 'Unknown')) == pmid]
+        # Convert to analyzable format
+        paper_stats = []
+        for pmid, count in pmid_counts.items():
+            nodes = [node for node in self.nodes_data if str(node.get('PMID', 'Unknown')) == pmid]
+            edges = [edge for edge in self.edges_data if str(self.G.nodes[edge['source']].get('PMID', 'Unknown')) == pmid]
             
-            paper_stats[pmid] = {
-                'nodes': len(nodes),
+            paper_stats.append({
+                'PMID': pmid,
+                'nodes': count,
                 'edges': len(edges),
                 'node_types': Counter(node['type'] for node in nodes)
-            }
+            })
         
         return paper_stats
     def get_filtered_network(self, node_types=None, min_degree=1, min_weight=0.0):
