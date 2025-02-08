@@ -885,30 +885,49 @@ def main():
                         "Error in Cluster Interactions Analysis"
                     )
                     
-                    interactions = analyzer.get_cluster_interactions()
-                    if interactions:
+                    if cluster_results:
+                        # Process interactions into a dataframe
                         interaction_data = []
-                        for (cluster1, cluster2), data in interactions.items():
+                        for pair, data in cluster_results.get('interactions', {}).items():
+                            # Split the pair key into source and target clusters
+                            source_cluster = pair.split('_')[0] if isinstance(pair, str) else pair[0]
+                            target_cluster = pair.split('_')[1] if isinstance(pair, str) else pair[1]
+                            
                             interaction_data.append({
-                                "Cluster Pair": f"{cluster1} ↔ {cluster2}",
-                                "Interaction Count": data["count"],
-                                "Average Score": sum(edge["score"] for edge in data["edges"]) / len(data["edges"])
+                                "Source Cluster": source_cluster,
+                                "Target Cluster": target_cluster,
+                                "Interaction Count": data.get('count', 0),
+                                "Average Score": data.get('avg_score', 0)
                             })
                         
-                        interaction_df = pd.DataFrame(interaction_data)
-                        st.write("Cross-cluster Interactions:")
-                        st.dataframe(interaction_df)
-
-                    if cluster_results:
-                        # Cluster Interaction Visualizations
-                        cols = st.columns(2)
-                        with cols[0]:
-                            st.plotly_chart(cluster_results['visualizations']['dropdown'])
-                        with cols[1]:
-                            st.plotly_chart(cluster_results['visualizations']['heatmap'])
-                        
-                        # Cluster Composition
-                        st.plotly_chart(cluster_results['visualizations']['composition'])
+                        if interaction_data:
+                            interaction_df = pd.DataFrame(interaction_data)
+                            
+                            # Display summary metrics
+                            col1, col2 = st.columns(2)
+                            with col1:
+                                st.metric("Total Cluster Interactions", len(interaction_data))
+                            with col2:
+                                st.metric("Average Interaction Score", 
+                                         f"{interaction_df['Average Score'].mean():.2f}")
+                            
+                            # Display interaction matrix
+                            st.write("Cluster Interaction Matrix:")
+                            st.dataframe(interaction_df)
+                            
+                            # Display visualizations if available
+                            if 'visualizations' in cluster_results:
+                                # Heatmap
+                                if 'heatmap' in cluster_results['visualizations']:
+                                    st.plotly_chart(cluster_results['visualizations']['heatmap'])
+                                
+                                # Cluster composition
+                                if 'composition' in cluster_results['visualizations']:
+                                    st.plotly_chart(cluster_results['visualizations']['composition'])
+                                
+                                # Dropdown visualization
+                                if 'dropdown' in cluster_results['visualizations']:
+                                    st.plotly_chart(cluster_results['visualizations']['dropdown'])
 
                 # Publication Relationship Mapping
                 elif analysis_type == "Publication Relationship Mapping":
