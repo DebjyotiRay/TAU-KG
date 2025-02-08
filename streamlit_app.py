@@ -907,40 +907,7 @@ def main():
                 elif analysis_type == "PMID-Based Network Exploration":
                     st.subheader("Research Paper Network Exploration")
                     
-                    # PMID Selection
-                    unique_pmids = sorted(set(node.get('PMID', 'Unknown') for node in nodes_data if node.get('PMID') != 'Unknown'))
-                    selected_pmid = st.selectbox(
-                        "Select Research Paper (PMID)", 
-                        options=unique_pmids
-                    )
-                    
-                    if selected_pmid:
-                        # Detailed PMID Analysis
-                        pmid_nodes = [node for node in nodes_data if node.get('PMID') == selected_pmid]
-                        pmid_edges = [
-                            edge for edge in edges_data 
-                            if edge['source'] in [n['id'] for n in pmid_nodes] and 
-                            edge['target'] in [n['id'] for n in pmid_nodes]
-                        ]
-                        
-                        cols = st.columns(3)
-                        with cols[0]:
-                            st.metric("Nodes in Paper", len(pmid_nodes))
-                            st.metric("Node Types", len(set(node['type'] for node in pmid_nodes)))
-                        with cols[1]:
-                            st.metric("Edges in Paper Network", len(pmid_edges))
-                            st.metric("Average Edge Weight", 
-                                    f"{sum(edge['score'] for edge in pmid_edges)/len(pmid_edges):.2f}" if pmid_edges else "N/A")
-                        with cols[2]:
-                            st.metric("Clusters Represented", 
-                                    len(set(node.get('cluster', 'Unknown') for node in pmid_nodes)))
-                            st.metric("Network Density", 
-                                    f"{len(pmid_edges)/(len(pmid_nodes)*(len(pmid_nodes)-1)/2):.4f}")
-                        
-                        # Node Type Distribution
-                        type_distribution = Counter(node['type'] for node in pmid_nodes)
-                        st.subheader("Node Type Distribution")
-                        st.bar_chart(type_distribution)
+                    display_paper_analysis_tab()
 
                 # Temporal Research Dynamics
                 elif analysis_type == "Temporal Research Dynamics":
