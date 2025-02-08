@@ -219,7 +219,7 @@ class NetworkAnalyzer:
                 
         return similarity_score / len(shared_types) if shared_types else 0.0
     
-    def create_publication_network_plot(connections, publication_groups):
+   def create_publication_network_plot(self, connections, publication_groups):
         """Create an interactive network visualization of publication relationships"""
         # Create nodes
         nodes = list(set(pmid for conn in connections for pmid in conn[:2]))
