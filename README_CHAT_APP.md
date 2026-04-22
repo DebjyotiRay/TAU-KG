@@ -1,15 +1,16 @@
 # 🧬 Gene/Protein Knowledge Chat Application
 
-A local vector database-powered chat application that allows you to query and interact with gene/protein data from your CSV files using natural language, enhanced with GPT-4 and PubMed citations.
+A local vector database-powered chat application that allows you to query and interact with gene/protein data from your CSV files using natural language, enhanced with OpenAI or Gemini LLM responses and PubMed citations.
 
 ## Features
 
 - **Local Vector Database**: Uses ChromaDB to store and search gene/protein information
-- **GPT-4 Enhanced Responses**: Intelligent, grounded responses using OpenAI's GPT-4
+- **Provider-Switchable LLM Responses**: Intelligent, grounded responses using OpenAI GPT or Google Gemini
 - **PubMed Citations**: Automatic literature search with 5 recent citations per query
 - **Semantic Search**: Powered by sentence transformers for intelligent similarity matching
 - **Interactive Chat Interface**: Streamlit-based web application with real-time responses
 - **Rich Information Display**: Shows detailed gene/protein metadata with relevance scores
+- **Paper Ingestion**: Upload PDFs or paste PMC/NLM links to ingest papers into the same extraction pipeline
 - **Database Statistics**: View comprehensive stats about your dataset
 - **Quick Actions**: Random gene lookup, database stats, and gene name browsing
 - **Fallback Mode**: Works without API keys in basic mode
@@ -32,6 +33,20 @@ A local vector database-powered chat application that allows you to query and in
    streamlit run chat_app.py
    ```
 
+### Docker Deployment
+
+1. Copy `.env.example` to `.env` and set your API keys.
+2. Build and start the containerized app:
+   ```bash
+   docker compose up -d --build
+   ```
+3. Open the app on port `8778`:
+   ```text
+   http://YOUR_SERVER_IP:8778
+   ```
+
+The Docker setup runs `chat_app.py`, persists `chroma_db`, `uploaded_papers`, `data`, and the model cache in Docker volumes, and restarts automatically unless you stop it.
+
 ### Manual Setup
 
 If you prefer to install manually:
@@ -46,6 +61,34 @@ python vector_db_manager.py
 # Start the chat application
 streamlit run chat_app.py
 ```
+
+### LLM Provider Configuration
+
+Set the environment variables in your `.env` file to switch models:
+
+```bash
+# Required: choose one provider
+LLM_PROVIDER=openai  # or gemini
+
+# OpenAI settings
+OPENAI_API_KEY=your_openai_key
+OPENAI_MODEL=gpt-4o
+
+# Gemini settings
+GEMINI_API_KEY=your_gemini_key
+# Optional alias also supported:
+# GOOGLE_API_KEY=your_gemini_key
+GEMINI_MODEL=gemini-1.5-pro
+
+# Optional override for chat and paper extraction flows
+CHAT_LLM_MODEL=
+PAPER_EXTRACTION_MODEL=
+```
+
+Notes:
+- If `LLM_PROVIDER=openai`, the app uses `OPENAI_API_KEY`.
+- If `LLM_PROVIDER=gemini`, the app uses `GEMINI_API_KEY` (or `GOOGLE_API_KEY`).
+- `config.json` model names are auto-normalized when they do not match the selected provider.
 
 ## Usage
 
@@ -87,6 +130,12 @@ The chat application supports various types of queries:
 - **Database statistics** showing total genes, sources, and types
 - **Sample queries** to help you get started
 - **Clear chat history** option
+
+#### Paper Upload Workflow
+- **PDF upload** for local papers
+- **PMC/NLM links** for direct ingestion from National Library of Medicine article pages
+- **Same downstream pipeline** for metadata extraction, entity extraction, review, and graph merge
+- **Direct article access** links stored with the paper record when available
 
 #### Quick Actions
 - **🎲 Random Gene Info**: Get information about a random gene
